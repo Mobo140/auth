@@ -6,11 +6,11 @@ import (
 	"log"
 	"net"
 
-	userAPI "github.com/Mobo140/microservices/auth/internal/api/user"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/config/env"
 	userRepository "github.com/Mobo140/microservices/auth/internal/repository/user"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
+	userAPI "github.com/Mobo140/microservices/auth/internal/transport/user"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
