@@ -1,16 +1,14 @@
 module github.com/Mobo140/microservices/auth
 
-go 1.22.1
-
-toolchain go1.22.8
+go 1.21.4
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/joho/godotenv v1.5.1
 	google.golang.org/grpc v1.67.1
-	google.golang.org/protobuf v1.34.2
+	google.golang.org/protobuf v1.35.1
 )
 
 require (
