@@ -23,11 +23,6 @@ func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
 
-type server struct {
-	desc.UnimplementedUserV1Server
-	pool *pgxpool.Pool
-}
-
 func main() {
 	flag.Parse()
 	ctx := context.Background()
