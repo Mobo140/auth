@@ -6,10 +6,12 @@ import (
 
 	"github.com/Mobo140/microservices/auth/internal/client/db"
 	"github.com/Mobo140/microservices/auth/internal/client/db/pg"
+	"github.com/Mobo140/microservices/auth/internal/client/db/transaction"
 	"github.com/Mobo140/microservices/auth/internal/closer"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/config/env"
 	"github.com/Mobo140/microservices/auth/internal/repository"
+	logRepository "github.com/Mobo140/microservices/auth/internal/repository/logs"
 	userRepository "github.com/Mobo140/microservices/auth/internal/repository/user"
 	"github.com/Mobo140/microservices/auth/internal/service"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
@@ -21,7 +23,9 @@ type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 
 	dbClient       db.Client
+	txManager      db.TxManager
 	userRepository repository.UserRepository
+	logRepository  repository.LogRepository
 
 	userService service.UserService
 
@@ -42,7 +46,11 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *user.Implemen
 
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userService = userService.NewService(s.UserRepository(ctx))
+		s.userService = userService.NewService(
+			s.UserRepository(ctx),
+			s.LogRepository(ctx),
+			s.TxManager(ctx),
+		)
 	}
 	return s.userService
 }
@@ -87,6 +95,21 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+	return s.txManager
+}
+
+func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepository {
+	if s.logRepository == nil {
+		s.logRepository = logRepository.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.logRepository
+
+}
 func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := env.NewGRPCConfig()

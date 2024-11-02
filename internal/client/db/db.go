@@ -16,6 +16,7 @@ type Client interface {
 // DB is a interface for a work with database
 type DB interface {
 	SQLExecer
+	Transactor
 	Pinger
 	Close()
 }
@@ -49,3 +50,16 @@ type QueryExecer interface {
 type Pinger interface {
 	Ping(ctx context.Context) error
 }
+
+// Transactor is a interface for work with transactions
+type Transactor interface {
+	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
+}
+
+// TxManager is a interface which manages specified handler inside transaction
+type TxManager interface {
+	ReadCommitted(ctx context.Context, f Handler) error
+}
+
+// Handler - is a function wich will be called inside transaction
+type Handler func(ctx context.Context) error

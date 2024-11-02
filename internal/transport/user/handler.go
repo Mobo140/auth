@@ -35,6 +35,8 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 		return nil, err
 	}
 
+	log.Printf("id: %d", id)
+
 	return &desc.CreateResponse{Id: id}, nil
 }
 

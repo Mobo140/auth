@@ -12,7 +12,7 @@ import (
 	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/user/model"
 )
 
-var _ repository.UserRepository = (*repo)(nil)
+var _ repository.UserRepository = (*userRepo)(nil)
 
 const (
 	tableName       = "client"
@@ -24,14 +24,14 @@ const (
 	updatedAtColumn = "updated_at"
 )
 
-type repo struct {
+type userRepo struct {
 	db db.Client
 }
 
-func NewRepository(db db.Client) *repo {
-	return &repo{db: db}
+func NewRepository(db db.Client) *userRepo {
+	return &userRepo{db: db}
 }
-func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
+func (r *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
@@ -59,7 +59,7 @@ func (r *repo) Create(ctx context.Context, user *model.User) (int64, error) {
 
 }
 
-func (r *repo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
+func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
@@ -86,7 +86,7 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	return converter.ToUserInfoFromRepo(&info), nil
 }
 
-func (r *repo) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
+func (r *userRepo) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
 
 	builder := sq.Update(tableName).
 		Set(nameColumn, user.Name).
@@ -112,7 +112,7 @@ func (r *repo) Update(ctx context.Context, id int64, user *model.UpdateUserInfo)
 	return nil
 }
 
-func (r *repo) Delete(ctx context.Context, id int64) error {
+func (r *userRepo) Delete(ctx context.Context, id int64) error {
 
 	builderDelete := sq.Delete(tableName).
 		PlaceholderFormat(sq.Dollar).
