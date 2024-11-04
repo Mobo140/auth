@@ -323,7 +323,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: req,
 			},
-			want: res,
+			want: nil,
 			err:  serviceErr,
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
@@ -339,7 +339,7 @@ func TestUpdate(t *testing.T) {
 					Info: nil,
 				},
 			},
-			want: res,
+			want: nil,
 			err:  converseErr,
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
@@ -412,7 +412,7 @@ func TestDelete(t *testing.T) {
 			args: args{
 				req: req,
 			},
-			want: res,
+			want: nil,
 			err:  serviceErr,
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
