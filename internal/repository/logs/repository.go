@@ -27,7 +27,6 @@ func NewRepository(db db.Client) *logRepo {
 }
 
 func (l *logRepo) Create(ctx context.Context, lg *model.LogEntry) error {
-
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(userColumn, activityColumn, createdAtColumn).

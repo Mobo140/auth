@@ -31,8 +31,8 @@ type userRepo struct {
 func NewRepository(db db.Client) *userRepo {
 	return &userRepo{db: db}
 }
-func (r *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 
+func (r *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, roleColumn).
@@ -50,17 +50,14 @@ func (r *userRepo) Create(ctx context.Context, user *model.User) (int64, error) 
 	}
 
 	var userID int64
-	err = r.db.DB().ScanOneContext(ctx, &userID, q, args...)
-	if err != nil {
+	if err = r.db.DB().ScanOneContext(ctx, &userID, q, args...); err != nil {
 		return 0, err
 	}
 
 	return userID, nil
-
 }
 
 func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
-
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
@@ -78,8 +75,8 @@ func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	}
 
 	var info modelRepo.UserInfo
-	err = r.db.DB().ScanOneContext(ctx, &info, q, args...)
-	if err != nil {
+
+	if err = r.db.DB().ScanOneContext(ctx, &info, q, args...); err != nil {
 		return nil, err
 	}
 
@@ -87,7 +84,6 @@ func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 }
 
 func (r *userRepo) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
-
 	builder := sq.Update(tableName).
 		Set(nameColumn, user.Name).
 		Set(emailColumn, user.Email).
@@ -113,7 +109,6 @@ func (r *userRepo) Update(ctx context.Context, id int64, user *model.UpdateUserI
 }
 
 func (r *userRepo) Delete(ctx context.Context, id int64) error {
-
 	builderDelete := sq.Delete(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: id})
@@ -134,5 +129,4 @@ func (r *userRepo) Delete(ctx context.Context, id int64) error {
 	}
 
 	return nil
-
 }

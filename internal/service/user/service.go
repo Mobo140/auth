@@ -12,6 +12,10 @@ import (
 
 var _ service.UserService = (*serv)(nil)
 
+const (
+	unknownUser = -1
+)
+
 type serv struct {
 	userRepository repository.UserRepository
 	logRepository  repository.LogRepository
@@ -32,10 +36,9 @@ func NewService(
 
 func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 	var id int64
-	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		id, errTx = s.userRepository.Create(ctx, user)
-		if errTx != nil {
+		if id, errTx = s.userRepository.Create(ctx, user); errTx != nil {
 			return errTx
 		}
 
@@ -53,7 +56,7 @@ func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 	})
 
 	if err != nil {
-		return 0, err
+		return unknownUser, err
 	}
 
 	return id, nil
@@ -61,10 +64,9 @@ func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 
 func (s *serv) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	var info *model.UserInfo
-	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		info, errTx = s.userRepository.Get(ctx, id)
-		if errTx != nil {
+		if info, errTx = s.userRepository.Get(ctx, id); errTx != nil {
 			return errTx
 		}
 
@@ -89,11 +91,9 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 }
 
 func (s *serv) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
-
-	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		errTx = s.userRepository.Update(ctx, id, user)
-		if errTx != nil {
+		if errTx = s.userRepository.Update(ctx, id, user); errTx != nil {
 			return errTx
 		}
 
@@ -114,10 +114,9 @@ func (s *serv) Update(ctx context.Context, id int64, user *model.UpdateUserInfo)
 }
 
 func (s *serv) Delete(ctx context.Context, id int64) error {
-	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		errTx = s.userRepository.Delete(ctx, id)
-		if errTx != nil {
+		if errTx = s.userRepository.Delete(ctx, id); errTx != nil {
 			return errTx
 		}
 

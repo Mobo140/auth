@@ -25,11 +25,11 @@ func NewImplementation(userService service.UserService) *Implementation {
 }
 
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-
 	user, err := conv.ToUserFromDesc(req.User)
 	if err != nil {
 		return nil, err
 	}
+
 	id, err := i.userService.Create(ctx, user)
 	if err != nil {
 		return nil, err
@@ -54,6 +54,7 @@ func (i *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.G
 	if err != nil {
 		return nil, err
 	}
+
 	return &desc.GetResponse{
 		Info: userInfo,
 	}, nil
@@ -64,6 +65,7 @@ func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
+
 	err = i.userService.Update(ctx, req.Id, user)
 	if err != nil {
 		return &emptypb.Empty{}, err
@@ -73,7 +75,6 @@ func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*
 }
 
 func (i *Implementation) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-
 	err := i.userService.Delete(ctx, req.Id)
 	if err != nil {
 		return &emptypb.Empty{}, err

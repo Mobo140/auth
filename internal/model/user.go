@@ -26,9 +26,3 @@ type UpdateUserInfo struct {
 	Name  string
 	Email string
 }
-
-type LogEntry struct {
-	UserID    int64
-	Activity  string
-	CreatedAt time.Time
-}

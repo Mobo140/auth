@@ -38,11 +38,9 @@ func (p *pg) ScanOneContext(ctx context.Context, dest interface{}, q db.Query, a
 	}
 
 	return pgxscan.ScanOne(dest, row)
-
 }
 
 func (p *pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) (pgx.Rows, error) {
-
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.Query(ctx, q.QueryRow, args...)
@@ -74,14 +72,12 @@ func (p *pg) ExecContext(ctx context.Context, q db.Query, args ...interface{}) (
 }
 
 func (p *pg) QueryRowContext(ctx context.Context, q db.Query, args ...interface{}) pgx.Row {
-
 	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.QueryRow(ctx, q.QueryRow, args...)
 	}
 
 	return p.dbc.QueryRow(ctx, q.QueryRow, args...)
-
 }
 
 func (p *pg) Ping(ctx context.Context) error {

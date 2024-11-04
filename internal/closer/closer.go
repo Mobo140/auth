@@ -29,6 +29,7 @@ func CloseAll() {
 }
 func New(sig ...os.Signal) *Closer {
 	c := &Closer{done: make(chan struct{})}
+
 	if len(sig) > 0 {
 		go func() {
 			ch := make(chan os.Signal, 1)
@@ -37,8 +38,8 @@ func New(sig ...os.Signal) *Closer {
 			signal.Stop(ch)
 			c.CloseAll()
 		}()
-
 	}
+
 	return c
 }
 
@@ -62,6 +63,7 @@ func (c *Closer) CloseAll() {
 		c.mu.Unlock()
 
 		errs := make(chan error, len(funcs))
+
 		for _, f := range funcs {
 			go func(f func() error) {
 				errs <- f()

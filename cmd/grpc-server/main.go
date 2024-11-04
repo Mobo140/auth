@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	ctx := context.Background()
 
 	a, err := app.NewApp(ctx)

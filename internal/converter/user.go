@@ -1,13 +1,14 @@
-package сonverter
+package converter
 
 import (
+	"errors"
+
 	"github.com/Mobo140/microservices/auth/internal/model"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ToUserInfoFromService(info *model.UserInfo) (*desc.UserInfo, error) {
-
 	var updatedAtTime *timestamppb.Timestamp
 	if info.UpdatedAt.Valid {
 		updatedAtTime = timestamppb.New(info.UpdatedAt.Time)
@@ -26,7 +27,6 @@ func ToUserInfoFromService(info *model.UserInfo) (*desc.UserInfo, error) {
 		CreatedAt: timestamppb.New(info.CreatedAt),
 		UpdatedAt: updatedAtTime,
 	}, nil
-
 }
 
 func ToUserFromDesc(user *desc.User) (*model.User, error) {
@@ -34,6 +34,7 @@ func ToUserFromDesc(user *desc.User) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &model.User{
 		Name:            user.Name,
 		Email:           user.Email,
@@ -44,6 +45,10 @@ func ToUserFromDesc(user *desc.User) (*model.User, error) {
 }
 
 func ToUpdateUserInfoFromDesc(user *desc.UpdateUserInfo) (*model.UpdateUserInfo, error) {
+	if user == nil {
+		return nil, errors.New("update user info is empty")
+	}
+
 	return &model.UpdateUserInfo{
 		Name:  mapNameFromDescToString(user.Name),
 		Email: mapEmailFromDescToString(user.Email),
