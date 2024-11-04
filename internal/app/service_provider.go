@@ -52,11 +52,11 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 			s.TxManager(ctx),
 		)
 	}
+
 	return s.userService
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
-
 	if s.userRepository == nil {
 		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
 	}
@@ -75,6 +75,7 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 		if err != nil {
 			log.Fatalf("ping error: %s", err.Error())
 		}
+
 		closer.Add(cl.Close)
 
 		s.dbClient = cl
@@ -99,6 +100,7 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if s.txManager == nil {
 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
 	}
+
 	return s.txManager
 }
 
@@ -108,7 +110,6 @@ func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepos
 	}
 
 	return s.logRepository
-
 }
 func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
@@ -118,7 +119,6 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 		}
 
 		s.grpcConfig = cfg
-
 	}
 
 	return s.grpcConfig
