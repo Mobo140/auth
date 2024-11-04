@@ -84,6 +84,8 @@ linters-settings:
   nolintlint:
     require-explanation: true
     require-specific: true
+    enable: true
+    allow-leading-space: true  # Разрешает // nolint с пробелом
   wsl:
     allow-cuddle-declarations: true
     force-err-cuddling: true
@@ -91,6 +93,8 @@ linters-settings:
   gocognit:
     min-complexity: 160
 
+allow-leading-space: true  # Разрешает // nolint с пробелом
+    require-specific: true 
 issues:
   exclude-use-default: true  # Отключает правила по умолчанию
   exclude:
