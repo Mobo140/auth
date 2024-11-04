@@ -26,7 +26,7 @@ func NewService(
 	userRepository repository.UserRepository,
 	logRepository repository.LogRepository,
 	txManager db.TxManager,
-) *serv { // nolint
+) *serv { //nolint:revive //it's ok
 	return &serv{
 		userRepository: userRepository,
 		logRepository:  logRepository,
