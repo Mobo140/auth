@@ -63,12 +63,12 @@ func (i *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.G
 func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
 	user, err := conv.ToUpdateUserInfoFromDesc(req.Info)
 	if err != nil {
-		return &emptypb.Empty{}, err
+		return nil, err
 	}
 
 	err = i.userService.Update(ctx, req.Id, user)
 	if err != nil {
-		return &emptypb.Empty{}, err
+		return nil, err
 	}
 
 	return &emptypb.Empty{}, nil
@@ -77,7 +77,7 @@ func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*
 func (i *Implementation) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
 	err := i.userService.Delete(ctx, req.Id)
 	if err != nil {
-		return &emptypb.Empty{}, err
+		return nil, err
 	}
 
 	return &emptypb.Empty{}, nil

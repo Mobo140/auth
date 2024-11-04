@@ -178,6 +178,10 @@ func TestGet(t *testing.T) {
 		txManager *dbTxMocks.TxManagerMock,
 	)
 
+	type args struct {
+		req int64
+	}
+
 	var (
 		ctxValue = context.Background()
 		mc       = minimock.NewController(t)
@@ -189,7 +193,7 @@ func TestGet(t *testing.T) {
 		updatedAt = gofakeit.Date()
 		role      = (int64)(0)
 
-		repositoryErr  = fmt.Errorf("update userRepo error")
+		repositoryErr  = fmt.Errorf("update chatRepo error")
 		logErr         = fmt.Errorf("update log error")
 		transactionErr = fmt.Errorf("transaction error")
 
@@ -214,13 +218,17 @@ func TestGet(t *testing.T) {
 	tests := []struct {
 		name       string
 		setupMocks setupMocks
+		args       args
 		want       *model.UserInfo
 		err        error
 	}{
 		{
 			name: "success case",
 			want: info,
-			err:  nil,
+			args: args{
+				req: id,
+			},
+			err: nil,
 			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -235,7 +243,10 @@ func TestGet(t *testing.T) {
 		{
 			name: "transaction error",
 			want: nil,
-			err:  transactionErr,
+			args: args{
+				req: id,
+			},
+			err: transactionErr,
 			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -248,7 +259,10 @@ func TestGet(t *testing.T) {
 		{
 			name: "userRepo error",
 			want: nil,
-			err:  repositoryErr,
+			args: args{
+				req: id,
+			},
+			err: repositoryErr,
 			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -263,6 +277,9 @@ func TestGet(t *testing.T) {
 			name: "creating log in db error",
 			want: nil,
 			err:  logErr,
+			args: args{
+				req: id,
+			},
 			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -292,7 +309,7 @@ func TestGet(t *testing.T) {
 
 			service := userService.NewService(userRepo, logRepo, txManager)
 
-			userInfo, err := service.Get(ctxValue, id)
+			userInfo, err := service.Get(ctxValue, tt.args.req)
 			require.Equal(t, tt.err, err)
 			require.Equal(t, tt.want, userInfo)
 		})
@@ -307,6 +324,11 @@ func TestUpdate(t *testing.T) {
 		logRepo *repositoryMocks.LogRepositoryMock,
 		txManager *dbTxMocks.TxManagerMock,
 	)
+
+	type args struct {
+		ID  int64
+		req *model.UpdateUserInfo
+	}
 
 	var (
 		ctxValue = context.Background()
@@ -334,11 +356,20 @@ func TestUpdate(t *testing.T) {
 	tests := []struct {
 		name       string
 		setupMocks setupMocks
+		args       args
 		err        error
 	}{
 		{
 			name: "success case",
 			err:  nil,
+			args: args{
+				ID: id,
+				req: &model.UpdateUserInfo{
+					Name:  name,
+					Email: email,
+				},
+			},
+
 			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -352,7 +383,15 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name: "transaction error",
-			err:  transactionErr,
+			args: args{
+				ID: id,
+				req: &model.UpdateUserInfo{
+					Name:  name,
+					Email: email,
+				},
+			},
+
+			err: transactionErr,
 			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -364,7 +403,14 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name: "userRepo error",
-			err:  repositoryErr,
+			args: args{
+				ID: id,
+				req: &model.UpdateUserInfo{
+					Name:  name,
+					Email: email,
+				},
+			},
+			err: repositoryErr,
 			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -377,7 +423,14 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name: "creating log in db error",
-			err:  logErr,
+			args: args{
+				ID: id,
+				req: &model.UpdateUserInfo{
+					Name:  name,
+					Email: email,
+				},
+			},
+			err: logErr,
 			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
@@ -407,7 +460,7 @@ func TestUpdate(t *testing.T) {
 
 			service := userService.NewService(userRepo, logRepo, txManager)
 
-			err := service.Update(ctxValue, id, info)
+			err := service.Update(ctxValue, tt.args.ID, tt.args.req)
 			require.Equal(t, tt.err, err)
 		})
 	}

@@ -39,7 +39,7 @@ func TestCreate(t *testing.T) {
 		passwordConfirm = gofakeit.Password(true, true, true, true, true, 10)
 		role            = (int64)(0)
 
-		serviceErr      = fmt.Errorf("alalal error")
+		serviceErr      = fmt.Errorf("service create error")
 		conversationErr = fmt.Errorf("invalid role value: 5")
 
 		req = &desc.CreateRequest{
@@ -157,7 +157,7 @@ func TestGet(t *testing.T) {
 		updatedAt = gofakeit.Date()
 		role      = (int64)(0)
 
-		serviceErr      = fmt.Errorf("service error")
+		serviceErr      = fmt.Errorf("service get error")
 		conversationErr = fmt.Errorf("invalid role value: 5")
 
 		req = &desc.GetRequest{
@@ -279,7 +279,7 @@ func TestUpdate(t *testing.T) {
 		name  = gofakeit.Name()
 		email = gofakeit.Email()
 
-		serviceErr  = fmt.Errorf("service error")
+		serviceErr  = fmt.Errorf("service update error")
 		converseErr = fmt.Errorf("update user info is empty")
 
 		req = &desc.UpdateRequest{
@@ -378,7 +378,7 @@ func TestDelete(t *testing.T) {
 
 		id = gofakeit.Int64()
 
-		serviceErr = fmt.Errorf("service error")
+		serviceErr = fmt.Errorf("service delete error")
 
 		req = &desc.DeleteRequest{
 			Id: id,
