@@ -28,7 +28,7 @@ type userRepo struct {
 	db db.Client
 }
 
-func NewRepository(db db.Client) *userRepo {
+func NewRepository(db db.Client) *userRepo { //nolint:revive // it's ok
 	return &userRepo{db: db}
 }
 

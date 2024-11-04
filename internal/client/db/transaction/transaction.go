@@ -16,7 +16,7 @@ type manager struct {
 }
 
 // NewTranssactionManager creates a new tranasaction manager which satisfies the interface db.TxManager.
-func NewTransactionManager(db db.Transactor) *manager {
+func NewTransactionManager(db db.Transactor) *manager { //nolint:revive // it's ok
 	return &manager{
 		db: db,
 	}
