@@ -1,5 +1,5 @@
 .idea
 /bin/
 coverage_out
-
-coverage_out
+vendor.protogen
+.vscode/settings.json

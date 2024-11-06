@@ -25,6 +25,11 @@ func NewImplementation(userService service.UserService) *Implementation {
 }
 
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+	
 	user, err := conv.ToUserFromDesc(req.User)
 	if err != nil {
 		return nil, err
