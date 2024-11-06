@@ -17,6 +17,10 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+var (
+	count = 2
+)
+
 type App struct {
 	serviceProvider *serviceProvider
 	grpcServer      *grpc.Server
@@ -106,7 +110,8 @@ func (a *App) Run() error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(count)
+
 	go func() {
 		defer wg.Done()
 
@@ -115,6 +120,7 @@ func (a *App) Run() error {
 			log.Fatalf("failed to run GRPC server: %v", err)
 		}
 	}()
+
 	go func() {
 		defer wg.Done()
 

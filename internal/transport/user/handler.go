@@ -29,7 +29,7 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	
+
 	user, err := conv.ToUserFromDesc(req.User)
 	if err != nil {
 		return nil, err
