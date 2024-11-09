@@ -26,3 +26,8 @@ type UpdateUserInfo struct {
 	Name  string
 	Email string
 }
+
+type GetUsersRequest struct {
+	Limit  int64
+	Offset int64
+}

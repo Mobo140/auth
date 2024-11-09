@@ -25,3 +25,12 @@ func ToUserInfoFromRepo(info *modelRepo.UserInfo) *model.UserInfo {
 		UpdatedAt: info.UpdatedAt,
 	}
 }
+
+func ToUsersInfoFromRepo(users []*modelRepo.UserInfo) []*model.UserInfo {
+	var usersList = make([]*model.UserInfo, len(users))
+	for i, user := range users {
+		usersList[i] = ToUserInfoFromRepo(user)
+	}
+
+	return usersList
+}

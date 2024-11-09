@@ -6,12 +6,9 @@ import (
 
 	conv "github.com/Mobo140/microservices/auth/internal/converter"
 	"github.com/Mobo140/microservices/auth/internal/service"
-	"github.com/Mobo140/microservices/auth/internal/transport"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-var _ transport.UserHandler = (*Implementation)(nil)
 
 type Implementation struct {
 	desc.UnimplementedUserV1Server
@@ -46,6 +43,11 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 }
 
 func (i *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	info, err := i.userService.Get(ctx, req.GetId())
 	if err != nil {
 		return nil, err
@@ -65,6 +67,29 @@ func (i *Implementation) Get(ctx context.Context, req *desc.GetRequest) (*desc.G
 	}, nil
 }
 
+func (i *Implementation) GetUsers(ctx context.Context, req *desc.GetUsersRequest) (*desc.GetUsersResponse, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	params := conv.ToGetUsersParamsFromDesc(req.GetLimit(), req.GetOffset())
+
+	users, err := i.userService.GetUsers(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	usersInfo, err := conv.ToUsersListFromService(users)
+	if err != nil {
+		return nil, err
+	}
+
+	return &desc.GetUsersResponse{
+		Users: usersInfo,
+	}, nil
+}
+
 func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
 	user, err := conv.ToUpdateUserInfoFromDesc(req.Info)
 	if err != nil {
@@ -80,7 +105,12 @@ func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*
 }
 
 func (i *Implementation) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	err := i.userService.Delete(ctx, req.Id)
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	err = i.userService.Delete(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}

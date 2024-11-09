@@ -54,3 +54,24 @@ func ToUpdateUserInfoFromDesc(user *desc.UpdateUserInfo) (*model.UpdateUserInfo,
 		Email: mapEmailFromDescToString(user.Email),
 	}, nil
 }
+
+func ToGetUsersParamsFromDesc(limit int64, offset int64) *model.GetUsersRequest {
+	return &model.GetUsersRequest{
+		Limit:  limit,
+		Offset: offset,
+	}
+}
+
+func ToUsersListFromService(users []*model.UserInfo) ([]*desc.UserInfo, error) {
+	var err error
+	usersList := make([]*desc.UserInfo, len(users))
+
+	for i, user := range users {
+		usersList[i], err = ToUserInfoFromService(user)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return usersList, nil
+}

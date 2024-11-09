@@ -27,6 +27,8 @@ type UserV1Client interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	// Get user
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
+	// Get users
+	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	// Update user info
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Delete user
@@ -59,6 +61,15 @@ func (c *userV1Client) Get(ctx context.Context, in *GetRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *userV1Client) GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error) {
+	out := new(GetUsersResponse)
+	err := c.cc.Invoke(ctx, "/user_v1.UserV1/GetUsers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userV1Client) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/user_v1.UserV1/Update", in, out, opts...)
@@ -85,6 +96,8 @@ type UserV1Server interface {
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	// Get user
 	Get(context.Context, *GetRequest) (*GetResponse, error)
+	// Get users
+	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
 	// Update user info
 	Update(context.Context, *UpdateRequest) (*emptypb.Empty, error)
 	// Delete user
@@ -101,6 +114,9 @@ func (UnimplementedUserV1Server) Create(context.Context, *CreateRequest) (*Creat
 }
 func (UnimplementedUserV1Server) Get(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedUserV1Server) GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
 }
 func (UnimplementedUserV1Server) Update(context.Context, *UpdateRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
@@ -157,6 +173,24 @@ func _UserV1_Get_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserV1_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserV1Server).GetUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user_v1.UserV1/GetUsers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserV1Server).GetUsers(ctx, req.(*GetUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserV1_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateRequest)
 	if err := dec(in); err != nil {
@@ -207,6 +241,10 @@ var UserV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Get",
 			Handler:    _UserV1_Get_Handler,
+		},
+		{
+			MethodName: "GetUsers",
+			Handler:    _UserV1_GetUsers_Handler,
 		},
 		{
 			MethodName: "Update",

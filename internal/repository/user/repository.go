@@ -83,6 +83,36 @@ func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	return converter.ToUserInfoFromRepo(&info), nil
 }
 
+func (r *userRepo) GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*model.UserInfo, error) {
+	minID := params.Offset + 1
+	maxID := params.Offset + params.Limit
+	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.And{
+			sq.GtOrEq{idColumn: minID},
+			sq.LtOrEq{idColumn: maxID},
+		})
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.GetUsers",
+		QueryRow: query,
+	}
+
+	var usersList []*modelRepo.UserInfo
+
+	if err = r.db.DB().ScanAllContext(ctx, &usersList, q, args...); err != nil {
+		return nil, err
+	}
+
+	return converter.ToUsersInfoFromRepo(usersList), nil
+}
+
 func (r *userRepo) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
 	builder := sq.Update(tableName).
 		Set(nameColumn, user.Name).

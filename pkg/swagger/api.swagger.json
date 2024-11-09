@@ -150,6 +150,45 @@
           "UserV1"
         ]
       }
+    },
+    "/users/v1": {
+      "get": {
+        "summary": "Get users",
+        "operationId": "UserV1_GetUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/user_v1GetUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "UserV1"
+        ]
+      }
     }
   },
   "definitions": {
@@ -203,6 +242,18 @@
       "properties": {
         "info": {
           "$ref": "#/definitions/user_v1UserInfo"
+        }
+      }
+    },
+    "user_v1GetUsersResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/user_v1UserInfo"
+          }
         }
       }
     },

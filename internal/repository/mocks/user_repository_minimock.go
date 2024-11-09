@@ -40,6 +40,13 @@ type UserRepositoryMock struct {
 	beforeGetCounter uint64
 	GetMock          mUserRepositoryMockGet
 
+	funcGetUsers          func(ctx context.Context, params *model.GetUsersRequest) (upa1 []*model.UserInfo, err error)
+	funcGetUsersOrigin    string
+	inspectFuncGetUsers   func(ctx context.Context, params *model.GetUsersRequest)
+	afterGetUsersCounter  uint64
+	beforeGetUsersCounter uint64
+	GetUsersMock          mUserRepositoryMockGetUsers
+
 	funcUpdate          func(ctx context.Context, id int64, userInfo *model.UpdateUserInfo) (err error)
 	funcUpdateOrigin    string
 	inspectFuncUpdate   func(ctx context.Context, id int64, userInfo *model.UpdateUserInfo)
@@ -64,6 +71,9 @@ func NewUserRepositoryMock(t minimock.Tester) *UserRepositoryMock {
 
 	m.GetMock = mUserRepositoryMockGet{mock: m}
 	m.GetMock.callArgs = []*UserRepositoryMockGetParams{}
+
+	m.GetUsersMock = mUserRepositoryMockGetUsers{mock: m}
+	m.GetUsersMock.callArgs = []*UserRepositoryMockGetUsersParams{}
 
 	m.UpdateMock = mUserRepositoryMockUpdate{mock: m}
 	m.UpdateMock.callArgs = []*UserRepositoryMockUpdateParams{}
@@ -1101,6 +1111,349 @@ func (m *UserRepositoryMock) MinimockGetInspect() {
 	}
 }
 
+type mUserRepositoryMockGetUsers struct {
+	optional           bool
+	mock               *UserRepositoryMock
+	defaultExpectation *UserRepositoryMockGetUsersExpectation
+	expectations       []*UserRepositoryMockGetUsersExpectation
+
+	callArgs []*UserRepositoryMockGetUsersParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// UserRepositoryMockGetUsersExpectation specifies expectation struct of the UserRepository.GetUsers
+type UserRepositoryMockGetUsersExpectation struct {
+	mock               *UserRepositoryMock
+	params             *UserRepositoryMockGetUsersParams
+	paramPtrs          *UserRepositoryMockGetUsersParamPtrs
+	expectationOrigins UserRepositoryMockGetUsersExpectationOrigins
+	results            *UserRepositoryMockGetUsersResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// UserRepositoryMockGetUsersParams contains parameters of the UserRepository.GetUsers
+type UserRepositoryMockGetUsersParams struct {
+	ctx    context.Context
+	params *model.GetUsersRequest
+}
+
+// UserRepositoryMockGetUsersParamPtrs contains pointers to parameters of the UserRepository.GetUsers
+type UserRepositoryMockGetUsersParamPtrs struct {
+	ctx    *context.Context
+	params **model.GetUsersRequest
+}
+
+// UserRepositoryMockGetUsersResults contains results of the UserRepository.GetUsers
+type UserRepositoryMockGetUsersResults struct {
+	upa1 []*model.UserInfo
+	err  error
+}
+
+// UserRepositoryMockGetUsersOrigins contains origins of expectations of the UserRepository.GetUsers
+type UserRepositoryMockGetUsersExpectationOrigins struct {
+	origin       string
+	originCtx    string
+	originParams string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetUsers *mUserRepositoryMockGetUsers) Optional() *mUserRepositoryMockGetUsers {
+	mmGetUsers.optional = true
+	return mmGetUsers
+}
+
+// Expect sets up expected params for UserRepository.GetUsers
+func (mmGetUsers *mUserRepositoryMockGetUsers) Expect(ctx context.Context, params *model.GetUsersRequest) *mUserRepositoryMockGetUsers {
+	if mmGetUsers.mock.funcGetUsers != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Set")
+	}
+
+	if mmGetUsers.defaultExpectation == nil {
+		mmGetUsers.defaultExpectation = &UserRepositoryMockGetUsersExpectation{}
+	}
+
+	if mmGetUsers.defaultExpectation.paramPtrs != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by ExpectParams functions")
+	}
+
+	mmGetUsers.defaultExpectation.params = &UserRepositoryMockGetUsersParams{ctx, params}
+	mmGetUsers.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetUsers.expectations {
+		if minimock.Equal(e.params, mmGetUsers.defaultExpectation.params) {
+			mmGetUsers.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetUsers.defaultExpectation.params)
+		}
+	}
+
+	return mmGetUsers
+}
+
+// ExpectCtxParam1 sets up expected param ctx for UserRepository.GetUsers
+func (mmGetUsers *mUserRepositoryMockGetUsers) ExpectCtxParam1(ctx context.Context) *mUserRepositoryMockGetUsers {
+	if mmGetUsers.mock.funcGetUsers != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Set")
+	}
+
+	if mmGetUsers.defaultExpectation == nil {
+		mmGetUsers.defaultExpectation = &UserRepositoryMockGetUsersExpectation{}
+	}
+
+	if mmGetUsers.defaultExpectation.params != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Expect")
+	}
+
+	if mmGetUsers.defaultExpectation.paramPtrs == nil {
+		mmGetUsers.defaultExpectation.paramPtrs = &UserRepositoryMockGetUsersParamPtrs{}
+	}
+	mmGetUsers.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetUsers.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetUsers
+}
+
+// ExpectParamsParam2 sets up expected param params for UserRepository.GetUsers
+func (mmGetUsers *mUserRepositoryMockGetUsers) ExpectParamsParam2(params *model.GetUsersRequest) *mUserRepositoryMockGetUsers {
+	if mmGetUsers.mock.funcGetUsers != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Set")
+	}
+
+	if mmGetUsers.defaultExpectation == nil {
+		mmGetUsers.defaultExpectation = &UserRepositoryMockGetUsersExpectation{}
+	}
+
+	if mmGetUsers.defaultExpectation.params != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Expect")
+	}
+
+	if mmGetUsers.defaultExpectation.paramPtrs == nil {
+		mmGetUsers.defaultExpectation.paramPtrs = &UserRepositoryMockGetUsersParamPtrs{}
+	}
+	mmGetUsers.defaultExpectation.paramPtrs.params = &params
+	mmGetUsers.defaultExpectation.expectationOrigins.originParams = minimock.CallerInfo(1)
+
+	return mmGetUsers
+}
+
+// Inspect accepts an inspector function that has same arguments as the UserRepository.GetUsers
+func (mmGetUsers *mUserRepositoryMockGetUsers) Inspect(f func(ctx context.Context, params *model.GetUsersRequest)) *mUserRepositoryMockGetUsers {
+	if mmGetUsers.mock.inspectFuncGetUsers != nil {
+		mmGetUsers.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.GetUsers")
+	}
+
+	mmGetUsers.mock.inspectFuncGetUsers = f
+
+	return mmGetUsers
+}
+
+// Return sets up results that will be returned by UserRepository.GetUsers
+func (mmGetUsers *mUserRepositoryMockGetUsers) Return(upa1 []*model.UserInfo, err error) *UserRepositoryMock {
+	if mmGetUsers.mock.funcGetUsers != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Set")
+	}
+
+	if mmGetUsers.defaultExpectation == nil {
+		mmGetUsers.defaultExpectation = &UserRepositoryMockGetUsersExpectation{mock: mmGetUsers.mock}
+	}
+	mmGetUsers.defaultExpectation.results = &UserRepositoryMockGetUsersResults{upa1, err}
+	mmGetUsers.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetUsers.mock
+}
+
+// Set uses given function f to mock the UserRepository.GetUsers method
+func (mmGetUsers *mUserRepositoryMockGetUsers) Set(f func(ctx context.Context, params *model.GetUsersRequest) (upa1 []*model.UserInfo, err error)) *UserRepositoryMock {
+	if mmGetUsers.defaultExpectation != nil {
+		mmGetUsers.mock.t.Fatalf("Default expectation is already set for the UserRepository.GetUsers method")
+	}
+
+	if len(mmGetUsers.expectations) > 0 {
+		mmGetUsers.mock.t.Fatalf("Some expectations are already set for the UserRepository.GetUsers method")
+	}
+
+	mmGetUsers.mock.funcGetUsers = f
+	mmGetUsers.mock.funcGetUsersOrigin = minimock.CallerInfo(1)
+	return mmGetUsers.mock
+}
+
+// When sets expectation for the UserRepository.GetUsers which will trigger the result defined by the following
+// Then helper
+func (mmGetUsers *mUserRepositoryMockGetUsers) When(ctx context.Context, params *model.GetUsersRequest) *UserRepositoryMockGetUsersExpectation {
+	if mmGetUsers.mock.funcGetUsers != nil {
+		mmGetUsers.mock.t.Fatalf("UserRepositoryMock.GetUsers mock is already set by Set")
+	}
+
+	expectation := &UserRepositoryMockGetUsersExpectation{
+		mock:               mmGetUsers.mock,
+		params:             &UserRepositoryMockGetUsersParams{ctx, params},
+		expectationOrigins: UserRepositoryMockGetUsersExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetUsers.expectations = append(mmGetUsers.expectations, expectation)
+	return expectation
+}
+
+// Then sets up UserRepository.GetUsers return parameters for the expectation previously defined by the When method
+func (e *UserRepositoryMockGetUsersExpectation) Then(upa1 []*model.UserInfo, err error) *UserRepositoryMock {
+	e.results = &UserRepositoryMockGetUsersResults{upa1, err}
+	return e.mock
+}
+
+// Times sets number of times UserRepository.GetUsers should be invoked
+func (mmGetUsers *mUserRepositoryMockGetUsers) Times(n uint64) *mUserRepositoryMockGetUsers {
+	if n == 0 {
+		mmGetUsers.mock.t.Fatalf("Times of UserRepositoryMock.GetUsers mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetUsers.expectedInvocations, n)
+	mmGetUsers.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetUsers
+}
+
+func (mmGetUsers *mUserRepositoryMockGetUsers) invocationsDone() bool {
+	if len(mmGetUsers.expectations) == 0 && mmGetUsers.defaultExpectation == nil && mmGetUsers.mock.funcGetUsers == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetUsers.mock.afterGetUsersCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetUsers.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetUsers implements mm_repository.UserRepository
+func (mmGetUsers *UserRepositoryMock) GetUsers(ctx context.Context, params *model.GetUsersRequest) (upa1 []*model.UserInfo, err error) {
+	mm_atomic.AddUint64(&mmGetUsers.beforeGetUsersCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetUsers.afterGetUsersCounter, 1)
+
+	mmGetUsers.t.Helper()
+
+	if mmGetUsers.inspectFuncGetUsers != nil {
+		mmGetUsers.inspectFuncGetUsers(ctx, params)
+	}
+
+	mm_params := UserRepositoryMockGetUsersParams{ctx, params}
+
+	// Record call args
+	mmGetUsers.GetUsersMock.mutex.Lock()
+	mmGetUsers.GetUsersMock.callArgs = append(mmGetUsers.GetUsersMock.callArgs, &mm_params)
+	mmGetUsers.GetUsersMock.mutex.Unlock()
+
+	for _, e := range mmGetUsers.GetUsersMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.upa1, e.results.err
+		}
+	}
+
+	if mmGetUsers.GetUsersMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetUsers.GetUsersMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetUsers.GetUsersMock.defaultExpectation.params
+		mm_want_ptrs := mmGetUsers.GetUsersMock.defaultExpectation.paramPtrs
+
+		mm_got := UserRepositoryMockGetUsersParams{ctx, params}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetUsers.t.Errorf("UserRepositoryMock.GetUsers got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetUsers.GetUsersMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.params != nil && !minimock.Equal(*mm_want_ptrs.params, mm_got.params) {
+				mmGetUsers.t.Errorf("UserRepositoryMock.GetUsers got unexpected parameter params, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetUsers.GetUsersMock.defaultExpectation.expectationOrigins.originParams, *mm_want_ptrs.params, mm_got.params, minimock.Diff(*mm_want_ptrs.params, mm_got.params))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetUsers.t.Errorf("UserRepositoryMock.GetUsers got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetUsers.GetUsersMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetUsers.GetUsersMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetUsers.t.Fatal("No results are set for the UserRepositoryMock.GetUsers")
+		}
+		return (*mm_results).upa1, (*mm_results).err
+	}
+	if mmGetUsers.funcGetUsers != nil {
+		return mmGetUsers.funcGetUsers(ctx, params)
+	}
+	mmGetUsers.t.Fatalf("Unexpected call to UserRepositoryMock.GetUsers. %v %v", ctx, params)
+	return
+}
+
+// GetUsersAfterCounter returns a count of finished UserRepositoryMock.GetUsers invocations
+func (mmGetUsers *UserRepositoryMock) GetUsersAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetUsers.afterGetUsersCounter)
+}
+
+// GetUsersBeforeCounter returns a count of UserRepositoryMock.GetUsers invocations
+func (mmGetUsers *UserRepositoryMock) GetUsersBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetUsers.beforeGetUsersCounter)
+}
+
+// Calls returns a list of arguments used in each call to UserRepositoryMock.GetUsers.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetUsers *mUserRepositoryMockGetUsers) Calls() []*UserRepositoryMockGetUsersParams {
+	mmGetUsers.mutex.RLock()
+
+	argCopy := make([]*UserRepositoryMockGetUsersParams, len(mmGetUsers.callArgs))
+	copy(argCopy, mmGetUsers.callArgs)
+
+	mmGetUsers.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetUsersDone returns true if the count of the GetUsers invocations corresponds
+// the number of defined expectations
+func (m *UserRepositoryMock) MinimockGetUsersDone() bool {
+	if m.GetUsersMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetUsersMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetUsersMock.invocationsDone()
+}
+
+// MinimockGetUsersInspect logs each unmet expectation
+func (m *UserRepositoryMock) MinimockGetUsersInspect() {
+	for _, e := range m.GetUsersMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to UserRepositoryMock.GetUsers at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetUsersCounter := mm_atomic.LoadUint64(&m.afterGetUsersCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetUsersMock.defaultExpectation != nil && afterGetUsersCounter < 1 {
+		if m.GetUsersMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to UserRepositoryMock.GetUsers at\n%s", m.GetUsersMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to UserRepositoryMock.GetUsers at\n%s with params: %#v", m.GetUsersMock.defaultExpectation.expectationOrigins.origin, *m.GetUsersMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetUsers != nil && afterGetUsersCounter < 1 {
+		m.t.Errorf("Expected call to UserRepositoryMock.GetUsers at\n%s", m.funcGetUsersOrigin)
+	}
+
+	if !m.GetUsersMock.invocationsDone() && afterGetUsersCounter > 0 {
+		m.t.Errorf("Expected %d calls to UserRepositoryMock.GetUsers at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetUsersMock.expectedInvocations), m.GetUsersMock.expectedInvocationsOrigin, afterGetUsersCounter)
+	}
+}
+
 type mUserRepositoryMockUpdate struct {
 	optional           bool
 	mock               *UserRepositoryMock
@@ -1484,6 +1837,8 @@ func (m *UserRepositoryMock) MinimockFinish() {
 
 			m.MinimockGetInspect()
 
+			m.MinimockGetUsersInspect()
+
 			m.MinimockUpdateInspect()
 		}
 	})
@@ -1511,5 +1866,6 @@ func (m *UserRepositoryMock) minimockDone() bool {
 		m.MinimockCreateDone() &&
 		m.MinimockDeleteDone() &&
 		m.MinimockGetDone() &&
+		m.MinimockGetUsersDone() &&
 		m.MinimockUpdateDone()
 }

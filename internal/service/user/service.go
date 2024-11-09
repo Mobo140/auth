@@ -90,6 +90,33 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	return info, nil
 }
 
+func (s *serv) GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*model.UserInfo, error) {
+	var usersList []*model.UserInfo
+	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
+		var errTx error
+		if usersList, errTx = s.userRepository.GetUsers(ctx, params); errTx != nil {
+			return errTx
+		}
+
+		logEntry := model.LogEntry{
+			Activity: fmt.Sprintf("Get users: from %d to %d", params.Offset+1, params.Offset+(int64)(len(usersList))),
+		}
+
+		errTx = s.logRepository.Create(ctx, &logEntry)
+		if errTx != nil {
+			return errTx
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return usersList, nil
+}
+
 func (s *serv) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error

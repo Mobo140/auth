@@ -11,4 +11,5 @@ type UserService interface {
 	Get(ctx context.Context, id int64) (*model.UserInfo, error)
 	Update(ctx context.Context, id int64, userInfo *model.UpdateUserInfo) error
 	Delete(ctx context.Context, id int64) error
+	GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*model.UserInfo, error)
 }
