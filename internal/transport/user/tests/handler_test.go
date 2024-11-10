@@ -263,6 +263,180 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestGetUsers(t *testing.T) {
+	t.Parallel()
+	type userServiceMockFunc func(mc *minimock.Controller) service.UserService
+
+	type args struct {
+		req *desc.GetUsersRequest
+	}
+
+	var (
+		ctxValue = context.Background()
+		mc       = minimock.NewController(t)
+
+		idFirst        = gofakeit.Int64()
+		nameFirst      = gofakeit.Name()
+		emailFirst     = gofakeit.Email()
+		createdAtFirst = gofakeit.Date()
+		updatedAtFirst = gofakeit.Date()
+		roleFirst      = (int64)(0)
+
+		idSecond        = gofakeit.Int64()
+		nameSecond      = gofakeit.Name()
+		emailSecond     = gofakeit.Email()
+		createdAtSecond = gofakeit.Date()
+		updatedAtSecond = gofakeit.Date()
+		roleSecond      = (int64)(0)
+
+		serviceErr      = fmt.Errorf("service get error")
+		conversationErr = fmt.Errorf("invalid role value: 7")
+
+		req = &desc.GetUsersRequest{
+			Limit:  2,
+			Offset: 0,
+		}
+
+		params = &model.GetUsersRequest{
+			Limit:  2,
+			Offset: 0,
+		}
+
+		usersList = []*model.UserInfo{
+			{
+				ID:        idFirst,
+				Name:      nameFirst,
+				Email:     emailFirst,
+				Role:      roleFirst,
+				CreatedAt: createdAtFirst,
+				UpdatedAt: sql.NullTime{
+					Time:  updatedAtFirst,
+					Valid: true,
+				},
+			},
+			{
+				ID:        idSecond,
+				Name:      nameSecond,
+				Email:     emailSecond,
+				Role:      roleSecond,
+				CreatedAt: createdAtSecond,
+				UpdatedAt: sql.NullTime{
+					Time:  updatedAtSecond,
+					Valid: true,
+				},
+			},
+		}
+
+		res = &desc.GetUsersResponse{
+			Users: []*desc.UserInfo{
+				{
+					Id:        idFirst,
+					Name:      nameFirst,
+					Email:     emailFirst,
+					Role:      desc.Role_USER,
+					CreatedAt: timestamppb.New(createdAtFirst),
+					UpdatedAt: timestamppb.New(updatedAtFirst),
+				},
+				{
+					Id:        idSecond,
+					Name:      nameSecond,
+					Email:     emailSecond,
+					Role:      desc.Role_USER,
+					CreatedAt: timestamppb.New(createdAtSecond),
+					UpdatedAt: timestamppb.New(updatedAtSecond),
+				},
+			},
+		}
+	)
+
+	tests := []struct {
+		name            string
+		args            args
+		userServiceMock userServiceMockFunc
+		want            *desc.GetUsersResponse
+		err             error
+	}{
+		{
+			name: "success",
+			args: args{
+				req: req,
+			},
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
+				mock.GetUsersMock.Expect(ctxValue, params).Return(usersList, nil)
+				return mock
+			},
+			want: res,
+			err:  nil,
+		},
+		{
+			name: "service error case",
+			args: args{
+				req: req,
+			},
+			want: nil,
+			err:  serviceErr,
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
+				mock.GetUsersMock.Expect(ctxValue, params).Return(nil, serviceErr)
+				return mock
+			},
+		},
+		{
+			name: "conversation error case",
+			args: args{
+				req: req,
+			},
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
+				mock.GetUsersMock.Expect(ctxValue, params).Return([]*model.UserInfo{
+					{
+						ID:        idFirst,
+						Name:      nameFirst,
+						Email:     emailFirst,
+						Role:      0,
+						CreatedAt: createdAtFirst,
+						UpdatedAt: sql.NullTime{
+							Time:  updatedAtFirst,
+							Valid: true,
+						},
+					},
+					{
+						ID:        idSecond,
+						Name:      nameSecond,
+						Email:     emailSecond,
+						Role:      7,
+						CreatedAt: createdAtSecond,
+						UpdatedAt: sql.NullTime{
+							Time:  updatedAtSecond,
+							Valid: true,
+						},
+					},
+				}, nil)
+
+				return mock
+			},
+			want: nil,
+			err:  conversationErr,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			userServiceMock := tt.userServiceMock(mc)
+			transport := userHandler.NewImplementation(userServiceMock)
+
+			response, err := transport.GetUsers(ctxValue, tt.args.req)
+			require.Equal(t, tt.err, err)
+			require.Equal(t, tt.want, response)
+		})
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 	type userServiceMockFunc func(mc *minimock.Controller) service.UserService

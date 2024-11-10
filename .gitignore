@@ -10,3 +10,4 @@ service.pem
 service.key
 service.csr
 ca.srl
+coverage_out

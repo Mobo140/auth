@@ -316,6 +316,207 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestGetUsers(t *testing.T) {
+	t.Parallel()
+
+	type setupMocks func(
+		userRepo *repositoryMocks.UserRepositoryMock,
+		logRepo *repositoryMocks.LogRepositoryMock,
+		txManager *dbTxMocks.TxManagerMock,
+	)
+
+	type args struct {
+		req *model.GetUsersRequest
+	}
+
+	var (
+		ctxValue = context.Background()
+		mc       = minimock.NewController(t)
+
+		idFirst        = gofakeit.Int64()
+		nameFirst      = gofakeit.Name()
+		emailFirst     = gofakeit.Email()
+		createdAtFirst = gofakeit.Date()
+		updatedAtFirst = gofakeit.Date()
+		roleFirst      = (int64)(0)
+
+		idSecond        = gofakeit.Int64()
+		nameSecond      = gofakeit.Name()
+		emailSecond     = gofakeit.Email()
+		createdAtSecond = gofakeit.Date()
+		updatedAtSecond = gofakeit.Date()
+		roleSecond      = (int64)(0)
+
+		repositoryErr  = fmt.Errorf("update chatRepo error")
+		logErr         = fmt.Errorf("update log error")
+		transactionErr = fmt.Errorf("transaction error")
+
+		req = &model.GetUsersRequest{
+			Limit:  2,
+			Offset: 0,
+		}
+
+		params = &model.GetUsersRequest{
+			Limit:  2,
+			Offset: 0,
+		}
+
+		usersList = []*model.UserInfo{
+			{
+				ID:        idFirst,
+				Name:      nameFirst,
+				Email:     emailFirst,
+				Role:      roleFirst,
+				CreatedAt: createdAtFirst,
+				UpdatedAt: sql.NullTime{
+					Time:  updatedAtFirst,
+					Valid: true,
+				},
+			},
+			{
+				ID:        idSecond,
+				Name:      nameSecond,
+				Email:     emailSecond,
+				Role:      roleSecond,
+				CreatedAt: createdAtSecond,
+				UpdatedAt: sql.NullTime{
+					Time:  updatedAtSecond,
+					Valid: true,
+				},
+			},
+		}
+
+		res = []*model.UserInfo{
+			{
+				ID:        idFirst,
+				Name:      nameFirst,
+				Email:     emailFirst,
+				Role:      roleFirst,
+				CreatedAt: createdAtFirst,
+				UpdatedAt: sql.NullTime{
+					Time:  updatedAtFirst,
+					Valid: true,
+				},
+			},
+			{
+				ID:        idSecond,
+				Name:      nameSecond,
+				Email:     emailSecond,
+				Role:      roleSecond,
+				CreatedAt: createdAtSecond,
+				UpdatedAt: sql.NullTime{
+					Time:  updatedAtSecond,
+					Valid: true,
+				},
+			},
+		}
+
+		logEntry = &model.LogEntry{
+			Activity: fmt.Sprintf("Get users: from %d to %d", params.Offset+1, params.Offset+(int64)(len(usersList))),
+		}
+	)
+
+	tests := []struct {
+		name       string
+		setupMocks setupMocks
+		args       args
+		want       []*model.UserInfo
+		err        error
+	}{
+		{
+			name: "success case",
+			want: res,
+			args: args{
+				req: req,
+			},
+			err: nil,
+			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+				logRepo *repositoryMocks.LogRepositoryMock,
+				txManager *dbTxMocks.TxManagerMock,
+			) {
+				userRepo.GetUsersMock.Expect(ctxValue, params).Return(usersList, nil)
+				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
+				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
+					return f(ctx)
+				})
+			},
+		},
+		{
+			name: "transaction error",
+			want: nil,
+			args: args{
+				req: req,
+			},
+			err: transactionErr,
+			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
+				_ *repositoryMocks.LogRepositoryMock,
+				txManager *dbTxMocks.TxManagerMock,
+			) {
+				txManager.ReadCommitedMock.Set(func(_ context.Context, _ repositoryTx.Handler) error {
+					return transactionErr
+				})
+			},
+		},
+		{
+			name: "userRepo error",
+			want: nil,
+			args: args{
+				req: req,
+			},
+			err: repositoryErr,
+			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+				_ *repositoryMocks.LogRepositoryMock,
+				txManager *dbTxMocks.TxManagerMock,
+			) {
+				userRepo.GetUsersMock.Expect(ctxValue, params).Return(nil, repositoryErr)
+				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
+					return f(ctxValue)
+				})
+			},
+		},
+		{
+			name: "creating log in db error",
+			want: nil,
+			err:  logErr,
+			args: args{
+				req: req,
+			},
+			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+				logRepo *repositoryMocks.LogRepositoryMock,
+				txManager *dbTxMocks.TxManagerMock,
+			) {
+				userRepo.GetUsersMock.Expect(ctxValue, params).Return(usersList, nil)
+				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
+				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
+					return f(ctxValue)
+				})
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			userRepo := repositoryMocks.NewUserRepositoryMock(mc)
+
+			logRepo := repositoryMocks.NewLogRepositoryMock(mc)
+			txManager := dbTxMocks.NewTxManagerMock(mc)
+
+			// Настройка моков в соответствии с тестами
+			tt.setupMocks(userRepo, logRepo, txManager)
+
+			service := userService.NewService(userRepo, logRepo, txManager)
+
+			userInfo, err := service.GetUsers(ctxValue, tt.args.req)
+			require.Equal(t, tt.err, err)
+			require.Equal(t, tt.want, userInfo)
+		})
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
