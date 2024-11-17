@@ -2,17 +2,19 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/Mobo140/microservices/auth/internal/client/db"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
-	"github.com/Mobo140/microservices/auth/internal/repository/user/converter"
-	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/user/model"
+	"github.com/Mobo140/microservices/auth/internal/repository/user/db/converter"
+	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/user/db/model"
 )
 
-var _ repository.UserRepository = (*userRepo)(nil)
+var _ repository.UserDBRepository = (*userRepo)(nil)
 
 const (
 	tableName       = "client"
@@ -77,6 +79,9 @@ func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	var info modelRepo.UserInfo
 
 	if err = r.db.DB().ScanOneContext(ctx, &info, q, args...); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, model.ErrorUserNotFound
+		}
 		return nil, err
 	}
 

@@ -17,20 +17,20 @@ const (
 )
 
 type serv struct {
-	userRepository repository.UserRepository
-	logRepository  repository.LogRepository
-	txManager      db.TxManager
+	dbRepository  repository.UserDBRepository
+	logRepository repository.LogRepository
+	txManager     db.TxManager
 }
 
 func NewService(
-	userRepository repository.UserRepository,
+	dbRepository repository.UserDBRepository,
 	logRepository repository.LogRepository,
 	txManager db.TxManager,
 ) *serv { //nolint:revive //it's ok
 	return &serv{
-		userRepository: userRepository,
-		logRepository:  logRepository,
-		txManager:      txManager,
+		dbRepository:  dbRepository,
+		logRepository: logRepository,
+		txManager:     txManager,
 	}
 }
 
@@ -38,7 +38,7 @@ func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 	var id int64
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		if id, errTx = s.userRepository.Create(ctx, user); errTx != nil {
+		if id, errTx = s.dbRepository.Create(ctx, user); errTx != nil {
 			return errTx
 		}
 
@@ -66,7 +66,8 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	var info *model.UserInfo
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		if info, errTx = s.userRepository.Get(ctx, id); errTx != nil {
+		info, errTx = s.dbRepository.Get(ctx, id)
+		if errTx != nil {
 			return errTx
 		}
 
@@ -94,7 +95,7 @@ func (s *serv) GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*
 	var usersList []*model.UserInfo
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		if usersList, errTx = s.userRepository.GetUsers(ctx, params); errTx != nil {
+		if usersList, errTx = s.dbRepository.GetUsers(ctx, params); errTx != nil {
 			return errTx
 		}
 
@@ -120,7 +121,7 @@ func (s *serv) GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*
 func (s *serv) Update(ctx context.Context, id int64, user *model.UpdateUserInfo) error {
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		if errTx = s.userRepository.Update(ctx, id, user); errTx != nil {
+		if errTx = s.dbRepository.Update(ctx, id, user); errTx != nil {
 			return errTx
 		}
 
@@ -143,7 +144,7 @@ func (s *serv) Update(ctx context.Context, id int64, user *model.UpdateUserInfo)
 func (s *serv) Delete(ctx context.Context, id int64) error {
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
-		if errTx = s.userRepository.Delete(ctx, id); errTx != nil {
+		if errTx = s.dbRepository.Delete(ctx, id); errTx != nil {
 			return errTx
 		}
 

@@ -20,7 +20,7 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	type setupMocks func(
-		userRepo *repositoryMocks.UserRepositoryMock,
+		userDBRepo *repositoryMocks.UserDBRepositoryMock,
 		logRepo *repositoryMocks.LogRepositoryMock,
 		txManager *dbTxMocks.TxManagerMock,
 	)
@@ -82,11 +82,11 @@ func TestCreate(t *testing.T) {
 			},
 			want: id,
 			err:  nil,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userDBRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
-				userRepo.CreateMock.Expect(ctxValue, user).Return(id, nil)
+				userDBRepo.CreateMock.Expect(ctxValue, user).Return(id, nil)
 				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
 				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
 					return f(ctx)
@@ -100,7 +100,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: unknownUser,
 			err:  transactionErr,
-			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(_ *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -116,7 +116,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: unknownUser,
 			err:  repositoryErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -133,7 +133,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: unknownUser,
 			err:  logErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -152,15 +152,14 @@ func TestCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			userRepo := repositoryMocks.NewUserRepositoryMock(mc)
-
+			dbRepo := repositoryMocks.NewUserDBRepositoryMock(mc)
 			logRepo := repositoryMocks.NewLogRepositoryMock(mc)
 			txManager := dbTxMocks.NewTxManagerMock(mc)
 
 			// Настройка моков в соответствии с тестами
-			tt.setupMocks(userRepo, logRepo, txManager)
+			tt.setupMocks(dbRepo, logRepo, txManager)
 
-			service := userService.NewService(userRepo, logRepo, txManager)
+			service := userService.NewService(dbRepo, logRepo, txManager)
 
 			gotID, err := service.Create(ctxValue, tt.args.req)
 			require.Equal(t, tt.err, err)
@@ -173,7 +172,7 @@ func TestGet(t *testing.T) {
 	t.Parallel()
 
 	type setupMocks func(
-		userRepo *repositoryMocks.UserRepositoryMock,
+		userDBRepo *repositoryMocks.UserDBRepositoryMock,
 		logRepo *repositoryMocks.LogRepositoryMock,
 		txManager *dbTxMocks.TxManagerMock,
 	)
@@ -229,7 +228,7 @@ func TestGet(t *testing.T) {
 				req: id,
 			},
 			err: nil,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -247,7 +246,7 @@ func TestGet(t *testing.T) {
 				req: id,
 			},
 			err: transactionErr,
-			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(_ *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -263,11 +262,11 @@ func TestGet(t *testing.T) {
 				req: id,
 			},
 			err: repositoryErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userDBRepo *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
-				userRepo.GetMock.Expect(ctxValue, id).Return(nil, repositoryErr)
+				userDBRepo.GetMock.Expect(ctxValue, id).Return(nil, repositoryErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
 				})
@@ -280,11 +279,11 @@ func TestGet(t *testing.T) {
 			args: args{
 				req: id,
 			},
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userDBRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
-				userRepo.GetMock.Expect(ctxValue, id).Return(info, nil)
+				userDBRepo.GetMock.Expect(ctxValue, id).Return(info, nil)
 				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
@@ -299,7 +298,7 @@ func TestGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			userRepo := repositoryMocks.NewUserRepositoryMock(mc)
+			userRepo := repositoryMocks.NewUserDBRepositoryMock(mc)
 
 			logRepo := repositoryMocks.NewLogRepositoryMock(mc)
 			txManager := dbTxMocks.NewTxManagerMock(mc)
@@ -320,7 +319,7 @@ func TestGetUsers(t *testing.T) {
 	t.Parallel()
 
 	type setupMocks func(
-		userRepo *repositoryMocks.UserRepositoryMock,
+		userRepo *repositoryMocks.UserDBRepositoryMock,
 		logRepo *repositoryMocks.LogRepositoryMock,
 		txManager *dbTxMocks.TxManagerMock,
 	)
@@ -430,7 +429,7 @@ func TestGetUsers(t *testing.T) {
 				req: req,
 			},
 			err: nil,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -448,7 +447,7 @@ func TestGetUsers(t *testing.T) {
 				req: req,
 			},
 			err: transactionErr,
-			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(_ *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -464,7 +463,7 @@ func TestGetUsers(t *testing.T) {
 				req: req,
 			},
 			err: repositoryErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -481,7 +480,7 @@ func TestGetUsers(t *testing.T) {
 			args: args{
 				req: req,
 			},
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -500,7 +499,7 @@ func TestGetUsers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			userRepo := repositoryMocks.NewUserRepositoryMock(mc)
+			userRepo := repositoryMocks.NewUserDBRepositoryMock(mc)
 
 			logRepo := repositoryMocks.NewLogRepositoryMock(mc)
 			txManager := dbTxMocks.NewTxManagerMock(mc)
@@ -521,7 +520,7 @@ func TestUpdate(t *testing.T) {
 	t.Parallel()
 
 	type setupMocks func(
-		userRepo *repositoryMocks.UserRepositoryMock,
+		userRepo *repositoryMocks.UserDBRepositoryMock,
 		logRepo *repositoryMocks.LogRepositoryMock,
 		txManager *dbTxMocks.TxManagerMock,
 	)
@@ -571,7 +570,7 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -593,7 +592,7 @@ func TestUpdate(t *testing.T) {
 			},
 
 			err: transactionErr,
-			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(_ *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -612,7 +611,7 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 			err: repositoryErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -632,7 +631,7 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 			err: logErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -651,7 +650,7 @@ func TestUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			userRepo := repositoryMocks.NewUserRepositoryMock(mc)
+			userRepo := repositoryMocks.NewUserDBRepositoryMock(mc)
 
 			logRepo := repositoryMocks.NewLogRepositoryMock(mc)
 			txManager := dbTxMocks.NewTxManagerMock(mc)
@@ -670,7 +669,7 @@ func TestDelete(t *testing.T) {
 	t.Parallel()
 
 	type setupMocks func(
-		userRepo *repositoryMocks.UserRepositoryMock,
+		userRepo *repositoryMocks.UserDBRepositoryMock,
 		logRepo *repositoryMocks.LogRepositoryMock,
 		txManager *dbTxMocks.TxManagerMock,
 	)
@@ -699,7 +698,7 @@ func TestDelete(t *testing.T) {
 		{
 			name: "success case",
 			err:  nil,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -713,7 +712,7 @@ func TestDelete(t *testing.T) {
 		{
 			name: "transaction error",
 			err:  transactionErr,
-			setupMocks: func(_ *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(_ *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -725,7 +724,7 @@ func TestDelete(t *testing.T) {
 		{
 			name: "userRepo error",
 			err:  repositoryErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				_ *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -738,7 +737,7 @@ func TestDelete(t *testing.T) {
 		{
 			name: "creating log in db error",
 			err:  logErr,
-			setupMocks: func(userRepo *repositoryMocks.UserRepositoryMock,
+			setupMocks: func(userRepo *repositoryMocks.UserDBRepositoryMock,
 				logRepo *repositoryMocks.LogRepositoryMock,
 				txManager *dbTxMocks.TxManagerMock,
 			) {
@@ -757,7 +756,7 @@ func TestDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			userRepo := repositoryMocks.NewUserRepositoryMock(mc)
+			userRepo := repositoryMocks.NewUserDBRepositoryMock(mc)
 
 			logRepo := repositoryMocks.NewLogRepositoryMock(mc)
 			txManager := dbTxMocks.NewTxManagerMock(mc)

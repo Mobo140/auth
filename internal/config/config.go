@@ -1,6 +1,10 @@
 package config
 
-import "github.com/joho/godotenv"
+import (
+	"time"
+
+	"github.com/joho/godotenv"
+)
 
 type GRPCConfig interface {
 	Address() string
@@ -12,6 +16,17 @@ type HTTPConfig interface {
 
 type PGConfig interface {
 	DSN() string
+}
+
+type RedisConfig interface {
+	Address() string
+	ConnectionTimeout() time.Duration
+	MaxIdle() int
+	IdleTimeout() time.Duration
+}
+
+type StorageConfig interface {
+	Mode() string
 }
 
 type SwaggerConfig interface {

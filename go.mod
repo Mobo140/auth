@@ -11,6 +11,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/georgysavva/scany v1.2.2
 	github.com/gojuno/minimock/v3 v3.4.1
+	github.com/gomodule/redigo v1.9.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.3

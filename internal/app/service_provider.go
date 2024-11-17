@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/Mobo140/microservices/auth/internal/client/cache"
+	"github.com/Mobo140/microservices/auth/internal/client/cache/redis"
 	"github.com/Mobo140/microservices/auth/internal/client/db"
 	"github.com/Mobo140/microservices/auth/internal/client/db/pg"
 	"github.com/Mobo140/microservices/auth/internal/client/db/transaction"
@@ -12,22 +14,31 @@ import (
 	"github.com/Mobo140/microservices/auth/internal/config/env"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	logRepository "github.com/Mobo140/microservices/auth/internal/repository/logs"
-	userRepository "github.com/Mobo140/microservices/auth/internal/repository/user"
+	userCacheRepository "github.com/Mobo140/microservices/auth/internal/repository/user/cache"
+	userDBRepository "github.com/Mobo140/microservices/auth/internal/repository/user/db"
 	"github.com/Mobo140/microservices/auth/internal/service"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
 	"github.com/Mobo140/microservices/auth/internal/transport/user"
+	redigo "github.com/gomodule/redigo/redis"
 )
 
 type serviceProvider struct {
 	pgConfig      config.PGConfig
 	grpcConfig    config.GRPCConfig
+	redisConfig   config.RedisConfig
+	storageConfig config.StorageConfig
+
 	httpConfig    config.HTTPConfig
 	swaggerConfig config.SwaggerConfig
 
-	dbClient       db.Client
-	txManager      db.TxManager
-	userRepository repository.UserRepository
-	logRepository  repository.LogRepository
+	redisPool *redigo.Pool
+
+	redisClient         cache.Client
+	dbClient            db.Client
+	txManager           db.TxManager
+	userDBRepository    repository.UserDBRepository
+	userCacheRepository repository.UserCacheRepository
+	logRepository       repository.LogRepository
 
 	userService service.UserService
 
@@ -49,7 +60,7 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *user.Implemen
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
 		s.userService = userService.NewService(
-			s.UserRepository(ctx),
+			s.UserDBRepository(ctx),
 			s.LogRepository(ctx),
 			s.TxManager(ctx),
 		)
@@ -58,17 +69,60 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	return s.userService
 }
 
-func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
-	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
+func (s *serviceProvider) UserDBRepository(ctx context.Context) repository.UserDBRepository {
+	if s.userDBRepository == nil {
+		s.userDBRepository = userDBRepository.NewRepository(s.DBClient(ctx))
 	}
 
-	return s.userRepository
+	return s.userDBRepository
+}
+
+func (s *serviceProvider) UserCacheRepository(_ context.Context) repository.UserCacheRepository {
+	if s.userCacheRepository == nil {
+		s.userCacheRepository = userCacheRepository.NewRepository(s.RedisClient())
+	}
+
+	return s.userCacheRepository
+}
+
+func (s *serviceProvider) StorageConfig() config.StorageConfig {
+	if s.storageConfig == nil {
+		cfg, err := env.NewStorageConfig()
+		if err != nil {
+			log.Fatalf("failed to get storage config: %s", err.Error())
+		}
+
+		s.storageConfig = cfg
+	}
+
+	return s.storageConfig
+}
+
+func (s *serviceProvider) RedisClient() cache.Client {
+	if s.redisClient == nil {
+		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
+	}
+
+	return s.redisClient
+}
+
+func (s *serviceProvider) RedisPool() *redigo.Pool {
+	if s.redisPool == nil {
+		s.redisPool = &redigo.Pool{
+			MaxIdle:     s.RedisConfig().MaxIdle(),
+			IdleTimeout: s.RedisConfig().IdleTimeout(),
+			DialContext: func(ctx context.Context) (redigo.Conn, error) {
+				return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
+			},
+		}
+	}
+
+	return s.redisPool
 }
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
-		cl, err := pg.New(ctx, s.PGConfig().DSN())
+		cl, err := pg.NewClient(ctx, s.PGConfig().DSN())
 		if err != nil {
 			log.Fatalf("failed to create db client: %v", err)
 		}
@@ -113,6 +167,21 @@ func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepos
 
 	return s.logRepository
 }
+
+func (s *serviceProvider) RedisConfig() config.RedisConfig {
+	if s.redisConfig == nil {
+		cfg, err := env.NewRedisConfig()
+		if err != nil {
+			log.Fatalf("failed to get redis config: %v", err)
+
+		}
+
+		s.redisConfig = cfg
+	}
+
+	return s.redisConfig
+}
+
 func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := env.NewGRPCConfig()
