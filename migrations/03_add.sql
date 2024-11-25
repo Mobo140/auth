@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-ALTER TABLE client ADD COLUMN hash_password VARCHAR(255);
+ALTER TABLE client ADD COLUMN hash_password VARCHAR(255) SET NOT NULL;
 -- +goose StatementEnd
 
 -- +goose Down

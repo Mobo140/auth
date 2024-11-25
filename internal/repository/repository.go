@@ -13,7 +13,7 @@ type UserDBRepository interface {
 	Delete(ctx context.Context, id int64) error
 	GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*model.UserInfo, error)
 	GetHashAndRoleByUsername(ctx context.Context, username string) (*model.UserAuthData, error)
-	GetRoleByUsername(ctx context.Context, username string) (*string, error)
+	GetRoleByUsername(ctx context.Context, username string) (int64, error)
 }
 
 type UserCacheRepository interface {

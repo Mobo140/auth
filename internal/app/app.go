@@ -12,6 +12,7 @@ import (
 
 	"github.com/Mobo140/microservices/auth/internal/closer"
 	"github.com/Mobo140/microservices/auth/internal/config"
+	descAuth "github.com/Mobo140/microservices/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	_ "github.com/Mobo140/microservices/auth/statik" // init statik
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -92,6 +93,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	reflection.Register(a.grpcServer)
 
 	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImplementation(ctx))
+	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImplementation(ctx))
 
 	return nil
 }

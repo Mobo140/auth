@@ -15,7 +15,7 @@ var _ config.RedisConfig = (*redisConfig)(nil)
 const (
 	redisHostEnvName              = "REDIS_HOST"
 	redisPortEnvName              = "REDIS_PORT"
-	redisConnectionTimeoutEnvName = "REDIS_CONNECTION_TIMEOUT"
+	redisConnectionTimeoutEnvName = "REDIS_CONNECTION_TIMEOUT_SEC"
 	redisMaxIdleEnvName           = "REDIS_MAX_IDLE"
 	redisIdleTimeoutEnvName       = "REDIS_IDLE_TIMEOUT_SEC"
 )

@@ -33,7 +33,5 @@ type GetUsersRequest struct {
 
 type UserAuthData struct {
 	HashedPassword string
-	Role           string
+	Role           int64
 }
-
-

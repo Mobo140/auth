@@ -32,6 +32,6 @@ type GetUsersRequest struct {
 }
 
 type UserAuthData struct {
-	HashedPassword string
-	Role           string
+	HashedPassword sql.NullString `db:"hash_password"`
+	Role           int64          `db:"role"`
 }

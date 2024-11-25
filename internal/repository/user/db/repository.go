@@ -21,7 +21,7 @@ const (
 	idColumn        = "id"
 	nameColumn      = "name"
 	emailColumn     = "email"
-	pshashColumn    = "hash_password"
+	hashColumn      = "hash_password"
 	roleColumn      = "role"
 	createdAtColumn = "created_at"
 	updatedAtColumn = "updated_at"
@@ -38,7 +38,7 @@ func NewRepository(db db.Client) *userRepo { //nolint:revive // it's ok
 func (r *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Columns(nameColumn, emailColumn, pshashColumn, roleColumn).
+		Columns(nameColumn, emailColumn, hashColumn, roleColumn).
 		Values(user.Name, user.Email, user.HashedPassword, user.Role).
 		Suffix("RETURNING id")
 
@@ -168,7 +168,7 @@ func (r *userRepo) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *userRepo) GetHashAndRoleByUsername(ctx context.Context, username string) (*model.UserAuthData, error) {
-	builder := sq.Select(pshashColumn, roleColumn).
+	builder := sq.Select(hashColumn, roleColumn).
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{nameColumn: username})
@@ -183,15 +183,18 @@ func (r *userRepo) GetHashAndRoleByUsername(ctx context.Context, username string
 		QueryRow: query,
 	}
 
-	var data *modelRepo.UserAuthData
-	if err = r.db.DB().ScanOneContext(ctx, &data, q, args...); err != nil {
+	var data modelRepo.UserAuthData
+	if err := r.db.DB().ScanOneContext(ctx, &data, q, args...); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, model.ErrorUserNotFound
+		}
 		return nil, err
 	}
 
-	return converter.ToUserAuthDataFromRepo(data), nil
+	return converter.ToUserAuthDataFromRepo(&data), nil
 }
 
-func (r *userRepo) GetRoleByUsername(ctx context.Context, username string) (*string, error) {
+func (r *userRepo) GetRoleByUsername(ctx context.Context, username string) (int64, error) {
 	builder := sq.Select(roleColumn).
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
@@ -199,7 +202,7 @@ func (r *userRepo) GetRoleByUsername(ctx context.Context, username string) (*str
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	q := db.Query{
@@ -207,9 +210,10 @@ func (r *userRepo) GetRoleByUsername(ctx context.Context, username string) (*str
 		QueryRow: query,
 	}
 
-	if err = r.db.DB().ScanOneContext(ctx, &username, q, args...); err != nil {
-		return nil, err
+	var role int64
+	if err = r.db.DB().ScanOneContext(ctx, &role, q, args...); err != nil {
+		return 0, err
 	}
 
-	return &username, nil
+	return role, nil
 }

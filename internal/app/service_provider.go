@@ -19,6 +19,7 @@ import (
 	"github.com/Mobo140/microservices/auth/internal/service"
 	authService "github.com/Mobo140/microservices/auth/internal/service/auth"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
+	"github.com/Mobo140/microservices/auth/internal/transport/auth"
 	"github.com/Mobo140/microservices/auth/internal/transport/user"
 	redigo "github.com/gomodule/redigo/redis"
 )
@@ -46,6 +47,7 @@ type serviceProvider struct {
 	authService service.AuthService
 
 	userImplementation *user.Implementation
+	authImplementation *auth.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -58,6 +60,14 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *user.Implemen
 	}
 
 	return s.userImplementation
+}
+
+func (s *serviceProvider) AuthImplementation(ctx context.Context) *auth.Implementation {
+	if s.authImplementation == nil {
+		s.authImplementation = auth.NewImplementation(s.AuthService(ctx))
+	}
+
+	return s.authImplementation
 }
 
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {

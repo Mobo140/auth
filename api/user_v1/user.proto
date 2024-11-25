@@ -28,8 +28,6 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     produces: "application/json",
 };
 
-
-
 service UserV1 {
     // Creating new user
     rpc Create(CreateRequest) returns (CreateResponse){

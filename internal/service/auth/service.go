@@ -76,7 +76,7 @@ func (s *serv) GetRefreshToken(ctx context.Context, refreshTokenStr string) (*st
 	refreshToken, err := utils.GenerateToken(
 		&model.Info{
 			Username: claims.Username,
-			Role:     *role,
+			Role:     role,
 		},
 		s.cfg.RefreshKey(),
 		s.cfg.RefreshExpire(),
@@ -103,7 +103,7 @@ func (s *serv) GetAccessToken(ctx context.Context, refreshTokenStr string) (*str
 	accessToken, err := utils.GenerateToken(
 		&model.Info{
 			Username: claims.Username,
-			Role:     *role,
+			Role:     role,
 		},
 		s.cfg.AccessKey(),
 		s.cfg.AccessExpire(),
