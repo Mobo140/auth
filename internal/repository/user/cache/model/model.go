@@ -10,9 +10,8 @@ type UserInfo struct {
 }
 
 type User struct {
-	Name            string
-	Email           string
-	Password        string
-	PasswordConfirm string
-	Role            int64
+	Name           string
+	Email          string
+	HashedPassword string
+	Role           int64
 }

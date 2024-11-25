@@ -25,6 +25,12 @@ type RedisConfig interface {
 	IdleTimeout() time.Duration
 }
 
+type SecretConfig interface {
+	RefreshKey() []byte
+	RefreshExpire() time.Duration
+	AccessKey() []byte
+	AccessExpire() time.Duration
+}
 type StorageConfig interface {
 	Mode() string
 }

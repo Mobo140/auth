@@ -7,11 +7,10 @@ import (
 
 func ToUserFromRepo(user *modelRepo.User) *model.User {
 	return &model.User{
-		Name:            user.Name,
-		Email:           user.Email,
-		Password:        user.Password,
-		PasswordConfirm: user.PasswordConfirm,
-		Role:            user.Role,
+		Name:           user.Name,
+		Email:          user.Email,
+		HashedPassword: user.HashedPassword,
+		Role:           user.Role,
 	}
 }
 
@@ -33,4 +32,11 @@ func ToUsersInfoFromRepo(users []*modelRepo.UserInfo) []*model.UserInfo {
 	}
 
 	return usersList
+}
+
+func ToUserAuthDataFromRepo(user *modelRepo.UserAuthData) *model.UserAuthData {
+	return &model.UserAuthData{
+		HashedPassword: user.HashedPassword,
+		Role:           user.Role,
+	}
 }

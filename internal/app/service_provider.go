@@ -17,6 +17,7 @@ import (
 	userCacheRepository "github.com/Mobo140/microservices/auth/internal/repository/user/cache"
 	userDBRepository "github.com/Mobo140/microservices/auth/internal/repository/user/db"
 	"github.com/Mobo140/microservices/auth/internal/service"
+	authService "github.com/Mobo140/microservices/auth/internal/service/auth"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
 	"github.com/Mobo140/microservices/auth/internal/transport/user"
 	redigo "github.com/gomodule/redigo/redis"
@@ -27,6 +28,7 @@ type serviceProvider struct {
 	grpcConfig    config.GRPCConfig
 	redisConfig   config.RedisConfig
 	storageConfig config.StorageConfig
+	secretConfig  config.SecretConfig
 
 	httpConfig    config.HTTPConfig
 	swaggerConfig config.SwaggerConfig
@@ -41,6 +43,7 @@ type serviceProvider struct {
 	logRepository       repository.LogRepository
 
 	userService service.UserService
+	authService service.AuthService
 
 	userImplementation *user.Implementation
 }
@@ -69,6 +72,19 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	return s.userService
 }
 
+func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+	if s.authService == nil {
+		s.authService = authService.NewService(
+			s.UserDBRepository(ctx),
+			s.UserCacheRepository(ctx),
+			s.LogRepository(ctx),
+			s.SecretConfig(),
+		)
+	}
+
+	return s.authService
+}
+
 func (s *serviceProvider) UserDBRepository(ctx context.Context) repository.UserDBRepository {
 	if s.userDBRepository == nil {
 		s.userDBRepository = userDBRepository.NewRepository(s.DBClient(ctx))
@@ -83,6 +99,19 @@ func (s *serviceProvider) UserCacheRepository(_ context.Context) repository.User
 	}
 
 	return s.userCacheRepository
+}
+
+func (s *serviceProvider) SecretConfig() config.SecretConfig {
+	if s.secretConfig == nil {
+		cfg, err := env.NewSecretConfig()
+		if err != nil {
+			log.Fatalf("failed to get secret config: %s", err.Error())
+		}
+
+		s.secretConfig = cfg
+	}
+
+	return s.secretConfig
 }
 
 func (s *serviceProvider) StorageConfig() config.StorageConfig {

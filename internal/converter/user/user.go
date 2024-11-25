@@ -2,9 +2,11 @@ package converter
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Mobo140/microservices/auth/internal/model"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -35,12 +37,15 @@ func ToUserFromDesc(user *desc.User) (*model.User, error) {
 		return nil, err
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate password hash: %w", err)
+	}
 	return &model.User{
-		Name:            user.Name,
-		Email:           user.Email,
-		Password:        user.Password,
-		PasswordConfirm: user.PasswordConfirm,
-		Role:            role,
+		Name:           user.Name,
+		Email:          user.Email,
+		HashedPassword: (string)(hashedPassword),
+		Role:           role,
 	}, nil
 }
 

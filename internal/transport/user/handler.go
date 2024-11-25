@@ -2,9 +2,10 @@ package user
 
 import (
 	"context"
+	"errors"
 	"log"
 
-	conv "github.com/Mobo140/microservices/auth/internal/converter"
+	conv "github.com/Mobo140/microservices/auth/internal/converter/user"
 	"github.com/Mobo140/microservices/auth/internal/service"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -25,6 +26,10 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 	err := req.Validate()
 	if err != nil {
 		return nil, err
+	}
+
+	if !i.validatePassword(req.User.Password, req.User.PasswordConfirm) {
+		return nil, errors.New("passwords don't match")
 	}
 
 	user, err := conv.ToUserFromDesc(req.User)
@@ -116,4 +121,8 @@ func (i *Implementation) Delete(ctx context.Context, req *desc.DeleteRequest) (*
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (i *Implementation) validatePassword(password string, passwordConfirm string) bool {
+	return password == passwordConfirm
 }

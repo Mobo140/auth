@@ -30,10 +30,9 @@ func ToUserInfoFromRepo(info *modelRepo.UserInfo) *model.UserInfo {
 
 func ToUserFromService(user *model.User) *modelRepo.User {
 	return &modelRepo.User{
-		Name:            user.Name,
-		Email:           user.Email,
-		Role:            user.Role,
-		Password:        user.Password,
-		PasswordConfirm: user.PasswordConfirm,
+		Name:           user.Name,
+		Email:          user.Email,
+		Role:           user.Role,
+		HashedPassword: user.HashedPassword,
 	}
 }

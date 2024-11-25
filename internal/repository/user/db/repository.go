@@ -21,6 +21,7 @@ const (
 	idColumn        = "id"
 	nameColumn      = "name"
 	emailColumn     = "email"
+	pshashColumn    = "hash_password"
 	roleColumn      = "role"
 	createdAtColumn = "created_at"
 	updatedAtColumn = "updated_at"
@@ -37,8 +38,8 @@ func NewRepository(db db.Client) *userRepo { //nolint:revive // it's ok
 func (r *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 	builder := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Columns(nameColumn, emailColumn, roleColumn).
-		Values(user.Name, user.Email, user.Role).
+		Columns(nameColumn, emailColumn, pshashColumn, roleColumn).
+		Values(user.Name, user.Email, user.HashedPassword, user.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builder.ToSql()
@@ -144,11 +145,11 @@ func (r *userRepo) Update(ctx context.Context, id int64, user *model.UpdateUserI
 }
 
 func (r *userRepo) Delete(ctx context.Context, id int64) error {
-	builderDelete := sq.Delete(tableName).
+	builder := sq.Delete(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: id})
 
-	query, args, err := builderDelete.ToSql()
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return err
 	}
@@ -164,4 +165,51 @@ func (r *userRepo) Delete(ctx context.Context, id int64) error {
 	}
 
 	return nil
+}
+
+func (r *userRepo) GetHashAndRoleByUsername(ctx context.Context, username string) (*model.UserAuthData, error) {
+	builder := sq.Select(pshashColumn, roleColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{nameColumn: username})
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.GetHashAndRoleByUsername",
+		QueryRow: query,
+	}
+
+	var data *modelRepo.UserAuthData
+	if err = r.db.DB().ScanOneContext(ctx, &data, q, args...); err != nil {
+		return nil, err
+	}
+
+	return converter.ToUserAuthDataFromRepo(data), nil
+}
+
+func (r *userRepo) GetRoleByUsername(ctx context.Context, username string) (*string, error) {
+	builder := sq.Select(roleColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{nameColumn: username})
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.GetRoleByUsername",
+		QueryRow: query,
+	}
+
+	if err = r.db.DB().ScanOneContext(ctx, &username, q, args...); err != nil {
+		return nil, err
+	}
+
+	return &username, nil
 }

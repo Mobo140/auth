@@ -15,11 +15,10 @@ type UserInfo struct {
 }
 
 type User struct {
-	Name            string
-	Email           string
-	Password        string
-	PasswordConfirm string
-	Role            int64
+	Name           string
+	Email          string
+	HashedPassword string
+	Role           int64
 }
 
 type UpdateUserInfo struct {
@@ -31,3 +30,10 @@ type GetUsersRequest struct {
 	Limit  int64
 	Offset int64
 }
+
+type UserAuthData struct {
+	HashedPassword string
+	Role           string
+}
+
+
