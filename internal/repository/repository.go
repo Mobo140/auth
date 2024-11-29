@@ -17,10 +17,20 @@ type UserDBRepository interface {
 }
 
 type UserCacheRepository interface {
-	Get(ctx context.Context, id int64) (*model.UserInfo, error)
-	Create(ctx context.Context, id int64, user *model.User) (int64, error)
+	GetHashAndRoleByUsername(ctx context.Context, username string) (*model.UserAuthData, error)
+	SetHashAndRole(ctx context.Context, username string, data *model.UserAuthData) error
 }
 
 type LogRepository interface {
-	Create(ctx context.Context, logEntry *model.LogEntry) error
+	CreateLogUser(ctx context.Context, logEntry *model.LogEntryUser) error
+	CreateLogAuth(ctx context.Context, logEntry *model.LogEntryAuth) error
+}
+
+type AccessDBRepository interface {
+	GetEndpointsAccess(ctx context.Context) ([]*model.AccessEndpoint, error)
+}
+
+type AccessCacheRepository interface {
+	GetEndpoints(ctx context.Context) ([]*model.AccessEndpoint, error)
+	SetEndpoints(ctx context.Context, endpoints []*model.AccessEndpoint) error
 }

@@ -42,10 +42,10 @@ func (c *rd) Set(ctx context.Context, key string, value interface{}) error {
 	return nil
 }
 
-func (c *rd) HashSet(ctx context.Context, key string, value interface{}) error {
+func (c *rd) HashSet(ctx context.Context, key string, values interface{}) error {
 	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
 		var errEx error
-		_, errEx = conn.Do("HSET", key, value)
+		_, errEx = conn.Do("HSET", redis.Args{key}.AddFlat(values)...)
 		if errEx != nil {
 			return errEx
 		}

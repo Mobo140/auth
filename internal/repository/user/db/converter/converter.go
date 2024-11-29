@@ -35,7 +35,6 @@ func ToUsersInfoFromRepo(users []*modelRepo.UserInfo) []*model.UserInfo {
 }
 
 func ToUserAuthDataFromRepo(user *modelRepo.UserAuthData) *model.UserAuthData {
-
 	var hashedPassword string
 	if user.HashedPassword.Valid {
 		hashedPassword = user.HashedPassword.String

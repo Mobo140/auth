@@ -1,14 +1,14 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE logs(
+CREATE TABLE access(
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
-    activity VARCHAR(255) NOT NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    role INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE logs;
+DROP TABLE access;
 -- +goose StatementEnd

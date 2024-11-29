@@ -30,7 +30,11 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 
 
 service AccessV1{
-    rpc Check(CheckRequest) returns (google.protobuf.Empty);
+    rpc Check(CheckRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            get: "/access/v1"
+        };
+    }
 }
 
 message CheckRequest {

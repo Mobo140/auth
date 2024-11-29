@@ -42,12 +42,12 @@ func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 			return errTx
 		}
 
-		logEntry := model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Create user: Name=%s, Email=%s, Role=%d", user.Name, user.Email, user.Role),
+		logEntry := model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Create user: Name=%s, Email=%s, Role=%d", user.Name, user.Email, user.Role),
 		}
 
-		errTx = s.logRepository.Create(ctx, &logEntry)
+		errTx = s.logRepository.CreateLogUser(ctx, &logEntry)
 		if errTx != nil {
 			return errTx
 		}
@@ -71,12 +71,12 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 			return errTx
 		}
 
-		logEntry := model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Get user: ID: %d, Name: %s, Email: %s, Role: %d", info.ID, info.Name, info.Email, info.Role),
+		logEntry := model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Get user: ID: %d, Name: %s, Email: %s, Role: %d", info.ID, info.Name, info.Email, info.Role),
 		}
 
-		errTx = s.logRepository.Create(ctx, &logEntry)
+		errTx = s.logRepository.CreateLogUser(ctx, &logEntry)
 		if errTx != nil {
 			return errTx
 		}
@@ -99,11 +99,11 @@ func (s *serv) GetUsers(ctx context.Context, params *model.GetUsersRequest) ([]*
 			return errTx
 		}
 
-		logEntry := model.LogEntry{
-			Activity: fmt.Sprintf("Get users: from %d to %d", params.Offset+1, params.Offset+(int64)(len(usersList))),
+		logEntry := model.LogEntryUser{
+			Action: fmt.Sprintf("Get users: from %d to %d", params.Offset+1, params.Offset+(int64)(len(usersList))),
 		}
 
-		errTx = s.logRepository.Create(ctx, &logEntry)
+		errTx = s.logRepository.CreateLogUser(ctx, &logEntry)
 		if errTx != nil {
 			return errTx
 		}
@@ -125,12 +125,12 @@ func (s *serv) Update(ctx context.Context, id int64, user *model.UpdateUserInfo)
 			return errTx
 		}
 
-		logEntry := model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Update user: Name=%s, Email=%s", user.Name, user.Email),
+		logEntry := model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Update user: Name=%s, Email=%s", user.Name, user.Email),
 		}
 
-		errTx = s.logRepository.Create(ctx, &logEntry)
+		errTx = s.logRepository.CreateLogUser(ctx, &logEntry)
 		if errTx != nil {
 			return errTx
 		}
@@ -148,12 +148,12 @@ func (s *serv) Delete(ctx context.Context, id int64) error {
 			return errTx
 		}
 
-		logEntry := model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Delete user: ID=%d", id),
+		logEntry := model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Delete user: ID=%d", id),
 		}
 
-		errTx = s.logRepository.Create(ctx, &logEntry)
+		errTx = s.logRepository.CreateLogUser(ctx, &logEntry)
 		if errTx != nil {
 			return errTx
 		}

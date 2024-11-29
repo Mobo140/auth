@@ -7,5 +7,5 @@ type LoginData struct {
 
 type Info struct {
 	Username string
-	Role int64
+	Role     string
 }

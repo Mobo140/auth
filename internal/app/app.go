@@ -12,6 +12,7 @@ import (
 
 	"github.com/Mobo140/microservices/auth/internal/closer"
 	"github.com/Mobo140/microservices/auth/internal/config"
+	descAccess "github.com/Mobo140/microservices/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/microservices/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	_ "github.com/Mobo140/microservices/auth/statik" // init statik
@@ -23,6 +24,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+// не гуд, куда-то в другое место засунуть или указывать прямо
 var (
 	count = 3
 )
@@ -94,6 +96,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImplementation(ctx))
 	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImplementation(ctx))
+	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessImplementation(ctx))
 
 	return nil
 }
@@ -116,6 +119,11 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	}
 
 	err = descAuth.RegisterAuthV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	if err != nil {
+		return err
+	}
+
+	err = descAccess.RegisterAccessV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}

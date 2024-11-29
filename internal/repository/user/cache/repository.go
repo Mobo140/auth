@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/Mobo140/microservices/auth/internal/client/cache"
 	"github.com/Mobo140/microservices/auth/internal/model"
@@ -22,9 +21,8 @@ func NewRepository(cache cache.Client) *userCache {
 	return &userCache{cache: cache}
 }
 
-func (r *userCache) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
-	idStr := strconv.FormatInt(id, 10)
-	values, err := r.cache.Cache().HGetAll(ctx, idStr)
+func (r *userCache) GetHashAndRoleByUsername(ctx context.Context, username string) (*model.UserAuthData, error) {
+	values, err := r.cache.Cache().HGetAll(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -33,24 +31,26 @@ func (r *userCache) Get(ctx context.Context, id int64) (*model.UserInfo, error) 
 		return nil, model.ErrorUserNotFound
 	}
 
-	var info modelRepo.UserInfo
+	var data modelRepo.UserAuthData
 
-	err = redigo.ScanStruct(values, &info)
+	err = redigo.ScanStruct(values, &data)
 	if err != nil {
 		return nil, err
 	}
 
-	return converter.ToUserInfoFromRepo(&info), nil
+	return converter.ToUserAuthDataFromRepo(&data), nil
 }
 
-func (r *userCache) Create(ctx context.Context, id int64, user *model.User) (int64, error) {
-	idStr := strconv.FormatInt(id, 10)
-	userRepo := converter.ToUserFromService(user)
-
-	err := r.cache.Cache().HashSet(ctx, idStr, userRepo)
+func (r *userCache) SetHashAndRole(ctx context.Context, username string, data *model.UserAuthData) error {
+	err := r.cache.Cache().HashSet(ctx,
+		username,
+		modelRepo.UserAuthData{
+			HashedPassword: data.HashedPassword,
+			Role:           data.Role,
+		})
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return id, nil
+	return nil
 }

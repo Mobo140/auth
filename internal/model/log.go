@@ -2,8 +2,14 @@ package model
 
 import "time"
 
-type LogEntry struct {
+type LogEntryUser struct {
 	UserID    int64
-	Activity  string
+	Action    string
+	CreatedAt time.Time
+}
+
+type LogEntryAuth struct {
+	Username  string
+	Action    string
 	CreatedAt time.Time
 }

@@ -13,12 +13,16 @@ import (
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/config/env"
 	"github.com/Mobo140/microservices/auth/internal/repository"
+	accessCacheRepository "github.com/Mobo140/microservices/auth/internal/repository/access/cache"
+	accessDBRepository "github.com/Mobo140/microservices/auth/internal/repository/access/db"
 	logRepository "github.com/Mobo140/microservices/auth/internal/repository/logs"
 	userCacheRepository "github.com/Mobo140/microservices/auth/internal/repository/user/cache"
 	userDBRepository "github.com/Mobo140/microservices/auth/internal/repository/user/db"
 	"github.com/Mobo140/microservices/auth/internal/service"
+	accessService "github.com/Mobo140/microservices/auth/internal/service/access"
 	authService "github.com/Mobo140/microservices/auth/internal/service/auth"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
+	"github.com/Mobo140/microservices/auth/internal/transport/access"
 	"github.com/Mobo140/microservices/auth/internal/transport/auth"
 	"github.com/Mobo140/microservices/auth/internal/transport/user"
 	redigo "github.com/gomodule/redigo/redis"
@@ -36,18 +40,22 @@ type serviceProvider struct {
 
 	redisPool *redigo.Pool
 
-	redisClient         cache.Client
-	dbClient            db.Client
-	txManager           db.TxManager
-	userDBRepository    repository.UserDBRepository
-	userCacheRepository repository.UserCacheRepository
-	logRepository       repository.LogRepository
+	redisClient           cache.Client
+	dbClient              db.Client
+	txManager             db.TxManager
+	userDBRepository      repository.UserDBRepository
+	userCacheRepository   repository.UserCacheRepository
+	accessDBRepository    repository.AccessDBRepository
+	accessCacheRepository repository.AccessCacheRepository
+	logRepository         repository.LogRepository
 
-	userService service.UserService
-	authService service.AuthService
+	userService   service.UserService
+	authService   service.AuthService
+	accessService service.AccessService
 
-	userImplementation *user.Implementation
-	authImplementation *auth.Implementation
+	userImplementation   *user.Implementation
+	authImplementation   *auth.Implementation
+	accessImplementation *access.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -70,6 +78,14 @@ func (s *serviceProvider) AuthImplementation(ctx context.Context) *auth.Implemen
 	return s.authImplementation
 }
 
+func (s *serviceProvider) AccessImplementation(ctx context.Context) *access.Implementation {
+	if s.accessImplementation == nil {
+		s.accessImplementation = access.NewImplementation(s.AccessService(ctx))
+	}
+
+	return s.accessImplementation
+}
+
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
 		s.userService = userService.NewService(
@@ -88,11 +104,26 @@ func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 			s.UserDBRepository(ctx),
 			s.UserCacheRepository(ctx),
 			s.LogRepository(ctx),
+			s.TxManager(ctx),
 			s.SecretConfig(),
 		)
 	}
 
 	return s.authService
+}
+
+func (s *serviceProvider) AccessService(ctx context.Context) service.AccessService {
+	if s.accessService == nil {
+		s.accessService = accessService.NewService(
+			s.AccessDBRepository(ctx),
+			s.AccessCacheRepository(ctx),
+			s.LogRepository(ctx),
+			s.TxManager(ctx),
+			s.SecretConfig(),
+		)
+	}
+
+	return s.accessService
 }
 
 func (s *serviceProvider) UserDBRepository(ctx context.Context) repository.UserDBRepository {
@@ -109,6 +140,22 @@ func (s *serviceProvider) UserCacheRepository(_ context.Context) repository.User
 	}
 
 	return s.userCacheRepository
+}
+
+func (s *serviceProvider) AccessDBRepository(ctx context.Context) repository.AccessDBRepository {
+	if s.accessDBRepository == nil {
+		s.accessDBRepository = accessDBRepository.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.accessDBRepository
+}
+
+func (s *serviceProvider) AccessCacheRepository(_ context.Context) repository.AccessCacheRepository {
+	if s.accessCacheRepository == nil {
+		s.accessCacheRepository = accessCacheRepository.NewRepository(s.RedisClient())
+	}
+
+	return s.accessCacheRepository
 }
 
 func (s *serviceProvider) SecretConfig() config.SecretConfig {
