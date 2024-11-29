@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Mobo140/microservices/auth/internal/client/db"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	"github.com/Mobo140/microservices/auth/internal/service"
+	"github.com/Mobo140/platform_common/pkg/db"
 )
 
 var _ service.UserService = (*serv)(nil)

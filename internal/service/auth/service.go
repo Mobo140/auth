@@ -7,7 +7,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/Mobo140/microservices/auth/internal/client/db"
+	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"

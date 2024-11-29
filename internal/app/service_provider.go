@@ -6,10 +6,7 @@ import (
 
 	"github.com/Mobo140/microservices/auth/internal/client/cache"
 	"github.com/Mobo140/microservices/auth/internal/client/cache/redis"
-	"github.com/Mobo140/microservices/auth/internal/client/db"
-	"github.com/Mobo140/microservices/auth/internal/client/db/pg"
-	"github.com/Mobo140/microservices/auth/internal/client/db/transaction"
-	"github.com/Mobo140/microservices/auth/internal/closer"
+	"github.com/Mobo140/platform_common/pkg/db/transaction"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/config/env"
 	"github.com/Mobo140/microservices/auth/internal/repository"
@@ -25,6 +22,9 @@ import (
 	"github.com/Mobo140/microservices/auth/internal/transport/access"
 	"github.com/Mobo140/microservices/auth/internal/transport/auth"
 	"github.com/Mobo140/microservices/auth/internal/transport/user"
+	"github.com/Mobo140/platform_common/pkg/closer"
+	"github.com/Mobo140/platform_common/pkg/db"
+	"github.com/Mobo140/platform_common/pkg/db/pg"
 	redigo "github.com/gomodule/redigo/redis"
 )
 

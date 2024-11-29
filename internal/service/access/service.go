@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Mobo140/microservices/auth/internal/client/db"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	"github.com/Mobo140/microservices/auth/internal/service"
 	"github.com/Mobo140/microservices/auth/internal/utils"
+	"github.com/Mobo140/platform_common/pkg/db"
 )
 
 var (
@@ -54,7 +54,6 @@ func (s *serv) Check(ctx context.Context, accessToken string, endpoint string) e
 		return errors.New("failed to get accessible roles")
 	}
 
-	
 	role, ok := accessibleMap[endpoint]
 	if !ok {
 		return nil

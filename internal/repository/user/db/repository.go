@@ -7,7 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 
-	"github.com/Mobo140/microservices/auth/internal/client/db"
+	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	"github.com/Mobo140/microservices/auth/internal/repository/user/db/converter"

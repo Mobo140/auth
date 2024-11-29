@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Mobo140/microservices/auth/internal/closer"
+	"github.com/Mobo140/platform_common/pkg/closer"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	descAccess "github.com/Mobo140/microservices/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/microservices/auth/pkg/auth_v1"
