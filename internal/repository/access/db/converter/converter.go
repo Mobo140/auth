@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"github.com/Mobo140/microservices/auth/internal/model"
-	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/access/db/model"
+	"github.com/Mobo140/auth/internal/model"
+	modelRepo "github.com/Mobo140/auth/internal/repository/access/db/model"
 )
 
 func ToEndpointsAccessFromRepo(endpoints []*modelRepo.AccessEndpoint) []*model.AccessEndpoint {

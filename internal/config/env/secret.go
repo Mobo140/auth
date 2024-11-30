@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Mobo140/microservices/auth/internal/config"
+	"github.com/Mobo140/auth/internal/config"
 )
 
 var _ config.SecretConfig = (*secretConfig)(nil)

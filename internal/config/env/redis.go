@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Mobo140/microservices/auth/internal/config"
+	"github.com/Mobo140/auth/internal/config"
 	"github.com/pkg/errors"
 )
 

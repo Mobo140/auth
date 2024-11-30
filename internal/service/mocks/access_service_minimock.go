@@ -2,7 +2,7 @@
 
 package mocks
 
-//go:generate minimock -i github.com/Mobo140/microservices/auth/internal/service.AccessService -o access_service_minimock.go -n AccessServiceMock -p mocks
+//go:generate minimock -i github.com/Mobo140/auth/internal/service.AccessService -o access_service_minimock.go -n AccessServiceMock -p mocks
 
 import (
 	"context"

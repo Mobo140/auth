@@ -2,7 +2,7 @@
 
 package mocks
 
-//go:generate minimock -i github.com/Mobo140/microservices/auth/internal/service.UserService -o user_service_minimock.go -n UserServiceMock -p mocks
+//go:generate minimock -i github.com/Mobo140/auth/internal/service.UserService -o user_service_minimock.go -n UserServiceMock -p mocks
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
+	"github.com/Mobo140/auth/internal/model"
 	"github.com/gojuno/minimock/v3"
 )
 

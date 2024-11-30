@@ -1,8 +1,8 @@
 package redis
 
 import (
-	"github.com/Mobo140/microservices/auth/internal/client/cache"
-	"github.com/Mobo140/microservices/auth/internal/config"
+	"github.com/Mobo140/auth/internal/client/cache"
+	"github.com/Mobo140/auth/internal/config"
 	"github.com/gomodule/redigo/redis"
 )
 

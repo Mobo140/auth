@@ -3,7 +3,7 @@ package utils
 import (
 	"time"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
+	"github.com/Mobo140/auth/internal/model"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
 )

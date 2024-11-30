@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/Mobo140/microservices/auth/internal/model"
-	"github.com/Mobo140/microservices/auth/internal/repository"
+	"github.com/Mobo140/auth/internal/model"
+	"github.com/Mobo140/auth/internal/repository"
 	"github.com/Mobo140/platform_common/pkg/db"
 )
 

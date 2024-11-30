@@ -2,7 +2,7 @@
 
 package mocks
 
-//go:generate minimock -i github.com/Mobo140/microservices/auth/internal/repository.AccessDBRepository -o access_db_repository_minimock.go -n AccessDBRepositoryMock -p mocks
+//go:generate minimock -i github.com/Mobo140/auth/internal/repository.AccessDBRepository -o access_db_repository_minimock.go -n AccessDBRepositoryMock -p mocks
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	mm_atomic "sync/atomic"
 	mm_time "time"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
+	"github.com/Mobo140/auth/internal/model"
 	"github.com/gojuno/minimock/v3"
 )
 

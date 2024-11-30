@@ -7,10 +7,10 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
-	"github.com/Mobo140/microservices/auth/internal/repository"
-	"github.com/Mobo140/microservices/auth/internal/repository/user/db/converter"
-	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/user/db/model"
+	"github.com/Mobo140/auth/internal/model"
+	"github.com/Mobo140/auth/internal/repository"
+	"github.com/Mobo140/auth/internal/repository/user/db/converter"
+	modelRepo "github.com/Mobo140/auth/internal/repository/user/db/model"
 	"github.com/Mobo140/platform_common/pkg/db"
 )
 

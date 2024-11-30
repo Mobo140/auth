@@ -132,11 +132,11 @@ lint:
 
 test: 
 	go clean -testcache
-	go test ./... -covermode count -coverpkg=github.com/Mobo140/microservices/auth/internal/service/..., github.com/Mobo140/microservices/auth/internal/transport/... -count 5
+	go test ./... -covermode count -coverpkg=github.com/Mobo140/auth/internal/service/..., github.com/Mobo140/auth/internal/transport/... -count 5
 
 test-coverage:
 	go clean -testcache
-	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/Mobo140/microservices/auth/internal/transport/user/...,github.com/Mobo140/microservices/auth/internal/service/user/... -count 5
+	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/Mobo140/auth/internal/transport/user/...,github.com/Mobo140/auth/internal/service/user/... -count 5
 	grep -v 'mocks\|config' coverage.tmp.out > coverage.out 
 	rm coverage.tmp.out
 	go tool cover -html=coverage.out

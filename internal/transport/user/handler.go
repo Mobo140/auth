@@ -5,9 +5,9 @@ import (
 	"errors"
 	"log"
 
-	conv "github.com/Mobo140/microservices/auth/internal/converter/user"
-	"github.com/Mobo140/microservices/auth/internal/service"
-	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
+	conv "github.com/Mobo140/auth/internal/converter/user"
+	"github.com/Mobo140/auth/internal/service"
+	desc "github.com/Mobo140/auth/pkg/user_v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 

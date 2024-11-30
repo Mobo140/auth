@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
-	repositoryMocks "github.com/Mobo140/microservices/auth/internal/repository/mocks"
-	userService "github.com/Mobo140/microservices/auth/internal/service/user"
+	"github.com/Mobo140/auth/internal/model"
+	repositoryMocks "github.com/Mobo140/auth/internal/repository/mocks"
+	userService "github.com/Mobo140/auth/internal/service/user"
 	repositoryTx "github.com/Mobo140/platform_common/pkg/db"
 	dbTxMocks "github.com/Mobo140/platform_common/pkg/db/mocks"
 	"github.com/brianvoe/gofakeit"

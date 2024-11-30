@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Mobo140/microservices/auth/internal/service"
-	desc "github.com/Mobo140/microservices/auth/pkg/access_v1"
+	"github.com/Mobo140/auth/internal/service"
+	desc "github.com/Mobo140/auth/pkg/access_v1"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

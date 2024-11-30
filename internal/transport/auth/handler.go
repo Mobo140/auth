@@ -3,9 +3,9 @@ package auth
 import (
 	"context"
 
-	conv "github.com/Mobo140/microservices/auth/internal/converter/auth"
-	"github.com/Mobo140/microservices/auth/internal/service"
-	desc "github.com/Mobo140/microservices/auth/pkg/auth_v1"
+	conv "github.com/Mobo140/auth/internal/converter/auth"
+	"github.com/Mobo140/auth/internal/service"
+	desc "github.com/Mobo140/auth/pkg/auth_v1"
 )
 
 type Implementation struct {

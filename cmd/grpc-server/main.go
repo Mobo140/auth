@@ -5,7 +5,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/Mobo140/microservices/auth/internal/app"
+	"github.com/Mobo140/auth/internal/app"
 )
 
 var configPath string

@@ -3,11 +3,11 @@ package cache
 import (
 	"context"
 
-	"github.com/Mobo140/microservices/auth/internal/client/cache"
-	"github.com/Mobo140/microservices/auth/internal/model"
-	"github.com/Mobo140/microservices/auth/internal/repository"
-	"github.com/Mobo140/microservices/auth/internal/repository/access/cache/converter"
-	modelCache "github.com/Mobo140/microservices/auth/internal/repository/access/cache/model"
+	"github.com/Mobo140/auth/internal/client/cache"
+	"github.com/Mobo140/auth/internal/model"
+	"github.com/Mobo140/auth/internal/repository"
+	"github.com/Mobo140/auth/internal/repository/access/cache/converter"
+	modelCache "github.com/Mobo140/auth/internal/repository/access/cache/model"
 	redigo "github.com/gomodule/redigo/redis"
 )
 

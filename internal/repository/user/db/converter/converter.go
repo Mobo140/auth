@@ -1,8 +1,8 @@
 package converter
 
 import (
-	model "github.com/Mobo140/microservices/auth/internal/model"
-	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/user/db/model"
+	model "github.com/Mobo140/auth/internal/model"
+	modelRepo "github.com/Mobo140/auth/internal/repository/user/db/model"
 )
 
 func ToUserFromRepo(user *modelRepo.User) *model.User {

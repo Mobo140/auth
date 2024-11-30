@@ -6,17 +6,17 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
-	"github.com/Mobo140/microservices/auth/internal/service"
-	serviceMocks "github.com/Mobo140/microservices/auth/internal/service/mocks"
-	userHandler "github.com/Mobo140/microservices/auth/internal/transport/user"
+	"github.com/Mobo140/auth/internal/model"
+	"github.com/Mobo140/auth/internal/service"
+	serviceMocks "github.com/Mobo140/auth/internal/service/mocks"
+	userHandler "github.com/Mobo140/auth/internal/transport/user"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
+	desc "github.com/Mobo140/auth/pkg/user_v1"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
 )

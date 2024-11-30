@@ -3,7 +3,7 @@ package converter
 import (
 	"fmt"
 
-	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
+	desc "github.com/Mobo140/auth/pkg/user_v1"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 

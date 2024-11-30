@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
-	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
+	"github.com/Mobo140/auth/internal/model"
+	desc "github.com/Mobo140/auth/pkg/user_v1"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

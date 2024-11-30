@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/Mobo140/microservices/auth/internal/model"
+	"github.com/Mobo140/auth/internal/model"
 )
 
 type UserService interface {
