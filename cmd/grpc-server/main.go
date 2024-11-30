@@ -8,10 +8,10 @@ import (
 	"github.com/Mobo140/auth/internal/app"
 )
 
-var configPath string
+var configPathM string
 
 func setupFlags() {
-	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+	flag.StringVar(&configPathM, "config-path", ".env", "path to config file")
 	flag.Parse()
 }
 
@@ -19,7 +19,7 @@ func main() {
 	setupFlags()
 	ctx := context.Background()
 
-	a, err := app.NewApp(ctx, configPath)
+	a, err := app.NewApp(ctx, configPathM)
 	if err != nil {
 		log.Fatalf("failed to init app: %v", err)
 	}
