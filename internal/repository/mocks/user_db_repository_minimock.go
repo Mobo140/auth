@@ -40,6 +40,20 @@ type UserDBRepositoryMock struct {
 	beforeGetCounter uint64
 	GetMock          mUserDBRepositoryMockGet
 
+	funcGetHashAndRoleByUsername          func(ctx context.Context, username string) (up1 *model.UserAuthData, err error)
+	funcGetHashAndRoleByUsernameOrigin    string
+	inspectFuncGetHashAndRoleByUsername   func(ctx context.Context, username string)
+	afterGetHashAndRoleByUsernameCounter  uint64
+	beforeGetHashAndRoleByUsernameCounter uint64
+	GetHashAndRoleByUsernameMock          mUserDBRepositoryMockGetHashAndRoleByUsername
+
+	funcGetRoleByUsername          func(ctx context.Context, username string) (i1 int64, err error)
+	funcGetRoleByUsernameOrigin    string
+	inspectFuncGetRoleByUsername   func(ctx context.Context, username string)
+	afterGetRoleByUsernameCounter  uint64
+	beforeGetRoleByUsernameCounter uint64
+	GetRoleByUsernameMock          mUserDBRepositoryMockGetRoleByUsername
+
 	funcGetUsers          func(ctx context.Context, params *model.GetUsersRequest) (upa1 []*model.UserInfo, err error)
 	funcGetUsersOrigin    string
 	inspectFuncGetUsers   func(ctx context.Context, params *model.GetUsersRequest)
@@ -71,6 +85,12 @@ func NewUserDBRepositoryMock(t minimock.Tester) *UserDBRepositoryMock {
 
 	m.GetMock = mUserDBRepositoryMockGet{mock: m}
 	m.GetMock.callArgs = []*UserDBRepositoryMockGetParams{}
+
+	m.GetHashAndRoleByUsernameMock = mUserDBRepositoryMockGetHashAndRoleByUsername{mock: m}
+	m.GetHashAndRoleByUsernameMock.callArgs = []*UserDBRepositoryMockGetHashAndRoleByUsernameParams{}
+
+	m.GetRoleByUsernameMock = mUserDBRepositoryMockGetRoleByUsername{mock: m}
+	m.GetRoleByUsernameMock.callArgs = []*UserDBRepositoryMockGetRoleByUsernameParams{}
 
 	m.GetUsersMock = mUserDBRepositoryMockGetUsers{mock: m}
 	m.GetUsersMock.callArgs = []*UserDBRepositoryMockGetUsersParams{}
@@ -1111,6 +1131,692 @@ func (m *UserDBRepositoryMock) MinimockGetInspect() {
 	}
 }
 
+type mUserDBRepositoryMockGetHashAndRoleByUsername struct {
+	optional           bool
+	mock               *UserDBRepositoryMock
+	defaultExpectation *UserDBRepositoryMockGetHashAndRoleByUsernameExpectation
+	expectations       []*UserDBRepositoryMockGetHashAndRoleByUsernameExpectation
+
+	callArgs []*UserDBRepositoryMockGetHashAndRoleByUsernameParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// UserDBRepositoryMockGetHashAndRoleByUsernameExpectation specifies expectation struct of the UserDBRepository.GetHashAndRoleByUsername
+type UserDBRepositoryMockGetHashAndRoleByUsernameExpectation struct {
+	mock               *UserDBRepositoryMock
+	params             *UserDBRepositoryMockGetHashAndRoleByUsernameParams
+	paramPtrs          *UserDBRepositoryMockGetHashAndRoleByUsernameParamPtrs
+	expectationOrigins UserDBRepositoryMockGetHashAndRoleByUsernameExpectationOrigins
+	results            *UserDBRepositoryMockGetHashAndRoleByUsernameResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// UserDBRepositoryMockGetHashAndRoleByUsernameParams contains parameters of the UserDBRepository.GetHashAndRoleByUsername
+type UserDBRepositoryMockGetHashAndRoleByUsernameParams struct {
+	ctx      context.Context
+	username string
+}
+
+// UserDBRepositoryMockGetHashAndRoleByUsernameParamPtrs contains pointers to parameters of the UserDBRepository.GetHashAndRoleByUsername
+type UserDBRepositoryMockGetHashAndRoleByUsernameParamPtrs struct {
+	ctx      *context.Context
+	username *string
+}
+
+// UserDBRepositoryMockGetHashAndRoleByUsernameResults contains results of the UserDBRepository.GetHashAndRoleByUsername
+type UserDBRepositoryMockGetHashAndRoleByUsernameResults struct {
+	up1 *model.UserAuthData
+	err error
+}
+
+// UserDBRepositoryMockGetHashAndRoleByUsernameOrigins contains origins of expectations of the UserDBRepository.GetHashAndRoleByUsername
+type UserDBRepositoryMockGetHashAndRoleByUsernameExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originUsername string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Optional() *mUserDBRepositoryMockGetHashAndRoleByUsername {
+	mmGetHashAndRoleByUsername.optional = true
+	return mmGetHashAndRoleByUsername
+}
+
+// Expect sets up expected params for UserDBRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Expect(ctx context.Context, username string) *mUserDBRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetHashAndRoleByUsernameExpectation{}
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by ExpectParams functions")
+	}
+
+	mmGetHashAndRoleByUsername.defaultExpectation.params = &UserDBRepositoryMockGetHashAndRoleByUsernameParams{ctx, username}
+	mmGetHashAndRoleByUsername.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetHashAndRoleByUsername.expectations {
+		if minimock.Equal(e.params, mmGetHashAndRoleByUsername.defaultExpectation.params) {
+			mmGetHashAndRoleByUsername.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetHashAndRoleByUsername.defaultExpectation.params)
+		}
+	}
+
+	return mmGetHashAndRoleByUsername
+}
+
+// ExpectCtxParam1 sets up expected param ctx for UserDBRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) ExpectCtxParam1(ctx context.Context) *mUserDBRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetHashAndRoleByUsernameExpectation{}
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation.params != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Expect")
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs = &UserDBRepositoryMockGetHashAndRoleByUsernameParamPtrs{}
+	}
+	mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetHashAndRoleByUsername.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetHashAndRoleByUsername
+}
+
+// ExpectUsernameParam2 sets up expected param username for UserDBRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) ExpectUsernameParam2(username string) *mUserDBRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetHashAndRoleByUsernameExpectation{}
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation.params != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Expect")
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs = &UserDBRepositoryMockGetHashAndRoleByUsernameParamPtrs{}
+	}
+	mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs.username = &username
+	mmGetHashAndRoleByUsername.defaultExpectation.expectationOrigins.originUsername = minimock.CallerInfo(1)
+
+	return mmGetHashAndRoleByUsername
+}
+
+// Inspect accepts an inspector function that has same arguments as the UserDBRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Inspect(f func(ctx context.Context, username string)) *mUserDBRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.inspectFuncGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Inspect function is already set for UserDBRepositoryMock.GetHashAndRoleByUsername")
+	}
+
+	mmGetHashAndRoleByUsername.mock.inspectFuncGetHashAndRoleByUsername = f
+
+	return mmGetHashAndRoleByUsername
+}
+
+// Return sets up results that will be returned by UserDBRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Return(up1 *model.UserAuthData, err error) *UserDBRepositoryMock {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetHashAndRoleByUsernameExpectation{mock: mmGetHashAndRoleByUsername.mock}
+	}
+	mmGetHashAndRoleByUsername.defaultExpectation.results = &UserDBRepositoryMockGetHashAndRoleByUsernameResults{up1, err}
+	mmGetHashAndRoleByUsername.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetHashAndRoleByUsername.mock
+}
+
+// Set uses given function f to mock the UserDBRepository.GetHashAndRoleByUsername method
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Set(f func(ctx context.Context, username string) (up1 *model.UserAuthData, err error)) *UserDBRepositoryMock {
+	if mmGetHashAndRoleByUsername.defaultExpectation != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Default expectation is already set for the UserDBRepository.GetHashAndRoleByUsername method")
+	}
+
+	if len(mmGetHashAndRoleByUsername.expectations) > 0 {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Some expectations are already set for the UserDBRepository.GetHashAndRoleByUsername method")
+	}
+
+	mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername = f
+	mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsernameOrigin = minimock.CallerInfo(1)
+	return mmGetHashAndRoleByUsername.mock
+}
+
+// When sets expectation for the UserDBRepository.GetHashAndRoleByUsername which will trigger the result defined by the following
+// Then helper
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) When(ctx context.Context, username string) *UserDBRepositoryMockGetHashAndRoleByUsernameExpectation {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
+	}
+
+	expectation := &UserDBRepositoryMockGetHashAndRoleByUsernameExpectation{
+		mock:               mmGetHashAndRoleByUsername.mock,
+		params:             &UserDBRepositoryMockGetHashAndRoleByUsernameParams{ctx, username},
+		expectationOrigins: UserDBRepositoryMockGetHashAndRoleByUsernameExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetHashAndRoleByUsername.expectations = append(mmGetHashAndRoleByUsername.expectations, expectation)
+	return expectation
+}
+
+// Then sets up UserDBRepository.GetHashAndRoleByUsername return parameters for the expectation previously defined by the When method
+func (e *UserDBRepositoryMockGetHashAndRoleByUsernameExpectation) Then(up1 *model.UserAuthData, err error) *UserDBRepositoryMock {
+	e.results = &UserDBRepositoryMockGetHashAndRoleByUsernameResults{up1, err}
+	return e.mock
+}
+
+// Times sets number of times UserDBRepository.GetHashAndRoleByUsername should be invoked
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Times(n uint64) *mUserDBRepositoryMockGetHashAndRoleByUsername {
+	if n == 0 {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Times of UserDBRepositoryMock.GetHashAndRoleByUsername mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetHashAndRoleByUsername.expectedInvocations, n)
+	mmGetHashAndRoleByUsername.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetHashAndRoleByUsername
+}
+
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) invocationsDone() bool {
+	if len(mmGetHashAndRoleByUsername.expectations) == 0 && mmGetHashAndRoleByUsername.defaultExpectation == nil && mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.mock.afterGetHashAndRoleByUsernameCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetHashAndRoleByUsername implements mm_repository.UserDBRepository
+func (mmGetHashAndRoleByUsername *UserDBRepositoryMock) GetHashAndRoleByUsername(ctx context.Context, username string) (up1 *model.UserAuthData, err error) {
+	mm_atomic.AddUint64(&mmGetHashAndRoleByUsername.beforeGetHashAndRoleByUsernameCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetHashAndRoleByUsername.afterGetHashAndRoleByUsernameCounter, 1)
+
+	mmGetHashAndRoleByUsername.t.Helper()
+
+	if mmGetHashAndRoleByUsername.inspectFuncGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.inspectFuncGetHashAndRoleByUsername(ctx, username)
+	}
+
+	mm_params := UserDBRepositoryMockGetHashAndRoleByUsernameParams{ctx, username}
+
+	// Record call args
+	mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.mutex.Lock()
+	mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.callArgs = append(mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.callArgs, &mm_params)
+	mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.mutex.Unlock()
+
+	for _, e := range mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.up1, e.results.err
+		}
+	}
+
+	if mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.params
+		mm_want_ptrs := mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.paramPtrs
+
+		mm_got := UserDBRepositoryMockGetHashAndRoleByUsernameParams{ctx, username}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetHashAndRoleByUsername.t.Errorf("UserDBRepositoryMock.GetHashAndRoleByUsername got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.username != nil && !minimock.Equal(*mm_want_ptrs.username, mm_got.username) {
+				mmGetHashAndRoleByUsername.t.Errorf("UserDBRepositoryMock.GetHashAndRoleByUsername got unexpected parameter username, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.originUsername, *mm_want_ptrs.username, mm_got.username, minimock.Diff(*mm_want_ptrs.username, mm_got.username))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetHashAndRoleByUsername.t.Errorf("UserDBRepositoryMock.GetHashAndRoleByUsername got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetHashAndRoleByUsername.t.Fatal("No results are set for the UserDBRepositoryMock.GetHashAndRoleByUsername")
+		}
+		return (*mm_results).up1, (*mm_results).err
+	}
+	if mmGetHashAndRoleByUsername.funcGetHashAndRoleByUsername != nil {
+		return mmGetHashAndRoleByUsername.funcGetHashAndRoleByUsername(ctx, username)
+	}
+	mmGetHashAndRoleByUsername.t.Fatalf("Unexpected call to UserDBRepositoryMock.GetHashAndRoleByUsername. %v %v", ctx, username)
+	return
+}
+
+// GetHashAndRoleByUsernameAfterCounter returns a count of finished UserDBRepositoryMock.GetHashAndRoleByUsername invocations
+func (mmGetHashAndRoleByUsername *UserDBRepositoryMock) GetHashAndRoleByUsernameAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.afterGetHashAndRoleByUsernameCounter)
+}
+
+// GetHashAndRoleByUsernameBeforeCounter returns a count of UserDBRepositoryMock.GetHashAndRoleByUsername invocations
+func (mmGetHashAndRoleByUsername *UserDBRepositoryMock) GetHashAndRoleByUsernameBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.beforeGetHashAndRoleByUsernameCounter)
+}
+
+// Calls returns a list of arguments used in each call to UserDBRepositoryMock.GetHashAndRoleByUsername.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetHashAndRoleByUsername *mUserDBRepositoryMockGetHashAndRoleByUsername) Calls() []*UserDBRepositoryMockGetHashAndRoleByUsernameParams {
+	mmGetHashAndRoleByUsername.mutex.RLock()
+
+	argCopy := make([]*UserDBRepositoryMockGetHashAndRoleByUsernameParams, len(mmGetHashAndRoleByUsername.callArgs))
+	copy(argCopy, mmGetHashAndRoleByUsername.callArgs)
+
+	mmGetHashAndRoleByUsername.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetHashAndRoleByUsernameDone returns true if the count of the GetHashAndRoleByUsername invocations corresponds
+// the number of defined expectations
+func (m *UserDBRepositoryMock) MinimockGetHashAndRoleByUsernameDone() bool {
+	if m.GetHashAndRoleByUsernameMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetHashAndRoleByUsernameMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetHashAndRoleByUsernameMock.invocationsDone()
+}
+
+// MinimockGetHashAndRoleByUsernameInspect logs each unmet expectation
+func (m *UserDBRepositoryMock) MinimockGetHashAndRoleByUsernameInspect() {
+	for _, e := range m.GetHashAndRoleByUsernameMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to UserDBRepositoryMock.GetHashAndRoleByUsername at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetHashAndRoleByUsernameCounter := mm_atomic.LoadUint64(&m.afterGetHashAndRoleByUsernameCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetHashAndRoleByUsernameMock.defaultExpectation != nil && afterGetHashAndRoleByUsernameCounter < 1 {
+		if m.GetHashAndRoleByUsernameMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to UserDBRepositoryMock.GetHashAndRoleByUsername at\n%s", m.GetHashAndRoleByUsernameMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to UserDBRepositoryMock.GetHashAndRoleByUsername at\n%s with params: %#v", m.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.origin, *m.GetHashAndRoleByUsernameMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetHashAndRoleByUsername != nil && afterGetHashAndRoleByUsernameCounter < 1 {
+		m.t.Errorf("Expected call to UserDBRepositoryMock.GetHashAndRoleByUsername at\n%s", m.funcGetHashAndRoleByUsernameOrigin)
+	}
+
+	if !m.GetHashAndRoleByUsernameMock.invocationsDone() && afterGetHashAndRoleByUsernameCounter > 0 {
+		m.t.Errorf("Expected %d calls to UserDBRepositoryMock.GetHashAndRoleByUsername at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetHashAndRoleByUsernameMock.expectedInvocations), m.GetHashAndRoleByUsernameMock.expectedInvocationsOrigin, afterGetHashAndRoleByUsernameCounter)
+	}
+}
+
+type mUserDBRepositoryMockGetRoleByUsername struct {
+	optional           bool
+	mock               *UserDBRepositoryMock
+	defaultExpectation *UserDBRepositoryMockGetRoleByUsernameExpectation
+	expectations       []*UserDBRepositoryMockGetRoleByUsernameExpectation
+
+	callArgs []*UserDBRepositoryMockGetRoleByUsernameParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// UserDBRepositoryMockGetRoleByUsernameExpectation specifies expectation struct of the UserDBRepository.GetRoleByUsername
+type UserDBRepositoryMockGetRoleByUsernameExpectation struct {
+	mock               *UserDBRepositoryMock
+	params             *UserDBRepositoryMockGetRoleByUsernameParams
+	paramPtrs          *UserDBRepositoryMockGetRoleByUsernameParamPtrs
+	expectationOrigins UserDBRepositoryMockGetRoleByUsernameExpectationOrigins
+	results            *UserDBRepositoryMockGetRoleByUsernameResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// UserDBRepositoryMockGetRoleByUsernameParams contains parameters of the UserDBRepository.GetRoleByUsername
+type UserDBRepositoryMockGetRoleByUsernameParams struct {
+	ctx      context.Context
+	username string
+}
+
+// UserDBRepositoryMockGetRoleByUsernameParamPtrs contains pointers to parameters of the UserDBRepository.GetRoleByUsername
+type UserDBRepositoryMockGetRoleByUsernameParamPtrs struct {
+	ctx      *context.Context
+	username *string
+}
+
+// UserDBRepositoryMockGetRoleByUsernameResults contains results of the UserDBRepository.GetRoleByUsername
+type UserDBRepositoryMockGetRoleByUsernameResults struct {
+	i1  int64
+	err error
+}
+
+// UserDBRepositoryMockGetRoleByUsernameOrigins contains origins of expectations of the UserDBRepository.GetRoleByUsername
+type UserDBRepositoryMockGetRoleByUsernameExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originUsername string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Optional() *mUserDBRepositoryMockGetRoleByUsername {
+	mmGetRoleByUsername.optional = true
+	return mmGetRoleByUsername
+}
+
+// Expect sets up expected params for UserDBRepository.GetRoleByUsername
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Expect(ctx context.Context, username string) *mUserDBRepositoryMockGetRoleByUsername {
+	if mmGetRoleByUsername.mock.funcGetRoleByUsername != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetRoleByUsername.defaultExpectation == nil {
+		mmGetRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetRoleByUsernameExpectation{}
+	}
+
+	if mmGetRoleByUsername.defaultExpectation.paramPtrs != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by ExpectParams functions")
+	}
+
+	mmGetRoleByUsername.defaultExpectation.params = &UserDBRepositoryMockGetRoleByUsernameParams{ctx, username}
+	mmGetRoleByUsername.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetRoleByUsername.expectations {
+		if minimock.Equal(e.params, mmGetRoleByUsername.defaultExpectation.params) {
+			mmGetRoleByUsername.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetRoleByUsername.defaultExpectation.params)
+		}
+	}
+
+	return mmGetRoleByUsername
+}
+
+// ExpectCtxParam1 sets up expected param ctx for UserDBRepository.GetRoleByUsername
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) ExpectCtxParam1(ctx context.Context) *mUserDBRepositoryMockGetRoleByUsername {
+	if mmGetRoleByUsername.mock.funcGetRoleByUsername != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetRoleByUsername.defaultExpectation == nil {
+		mmGetRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetRoleByUsernameExpectation{}
+	}
+
+	if mmGetRoleByUsername.defaultExpectation.params != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Expect")
+	}
+
+	if mmGetRoleByUsername.defaultExpectation.paramPtrs == nil {
+		mmGetRoleByUsername.defaultExpectation.paramPtrs = &UserDBRepositoryMockGetRoleByUsernameParamPtrs{}
+	}
+	mmGetRoleByUsername.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetRoleByUsername.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetRoleByUsername
+}
+
+// ExpectUsernameParam2 sets up expected param username for UserDBRepository.GetRoleByUsername
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) ExpectUsernameParam2(username string) *mUserDBRepositoryMockGetRoleByUsername {
+	if mmGetRoleByUsername.mock.funcGetRoleByUsername != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetRoleByUsername.defaultExpectation == nil {
+		mmGetRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetRoleByUsernameExpectation{}
+	}
+
+	if mmGetRoleByUsername.defaultExpectation.params != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Expect")
+	}
+
+	if mmGetRoleByUsername.defaultExpectation.paramPtrs == nil {
+		mmGetRoleByUsername.defaultExpectation.paramPtrs = &UserDBRepositoryMockGetRoleByUsernameParamPtrs{}
+	}
+	mmGetRoleByUsername.defaultExpectation.paramPtrs.username = &username
+	mmGetRoleByUsername.defaultExpectation.expectationOrigins.originUsername = minimock.CallerInfo(1)
+
+	return mmGetRoleByUsername
+}
+
+// Inspect accepts an inspector function that has same arguments as the UserDBRepository.GetRoleByUsername
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Inspect(f func(ctx context.Context, username string)) *mUserDBRepositoryMockGetRoleByUsername {
+	if mmGetRoleByUsername.mock.inspectFuncGetRoleByUsername != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("Inspect function is already set for UserDBRepositoryMock.GetRoleByUsername")
+	}
+
+	mmGetRoleByUsername.mock.inspectFuncGetRoleByUsername = f
+
+	return mmGetRoleByUsername
+}
+
+// Return sets up results that will be returned by UserDBRepository.GetRoleByUsername
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Return(i1 int64, err error) *UserDBRepositoryMock {
+	if mmGetRoleByUsername.mock.funcGetRoleByUsername != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Set")
+	}
+
+	if mmGetRoleByUsername.defaultExpectation == nil {
+		mmGetRoleByUsername.defaultExpectation = &UserDBRepositoryMockGetRoleByUsernameExpectation{mock: mmGetRoleByUsername.mock}
+	}
+	mmGetRoleByUsername.defaultExpectation.results = &UserDBRepositoryMockGetRoleByUsernameResults{i1, err}
+	mmGetRoleByUsername.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetRoleByUsername.mock
+}
+
+// Set uses given function f to mock the UserDBRepository.GetRoleByUsername method
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Set(f func(ctx context.Context, username string) (i1 int64, err error)) *UserDBRepositoryMock {
+	if mmGetRoleByUsername.defaultExpectation != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("Default expectation is already set for the UserDBRepository.GetRoleByUsername method")
+	}
+
+	if len(mmGetRoleByUsername.expectations) > 0 {
+		mmGetRoleByUsername.mock.t.Fatalf("Some expectations are already set for the UserDBRepository.GetRoleByUsername method")
+	}
+
+	mmGetRoleByUsername.mock.funcGetRoleByUsername = f
+	mmGetRoleByUsername.mock.funcGetRoleByUsernameOrigin = minimock.CallerInfo(1)
+	return mmGetRoleByUsername.mock
+}
+
+// When sets expectation for the UserDBRepository.GetRoleByUsername which will trigger the result defined by the following
+// Then helper
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) When(ctx context.Context, username string) *UserDBRepositoryMockGetRoleByUsernameExpectation {
+	if mmGetRoleByUsername.mock.funcGetRoleByUsername != nil {
+		mmGetRoleByUsername.mock.t.Fatalf("UserDBRepositoryMock.GetRoleByUsername mock is already set by Set")
+	}
+
+	expectation := &UserDBRepositoryMockGetRoleByUsernameExpectation{
+		mock:               mmGetRoleByUsername.mock,
+		params:             &UserDBRepositoryMockGetRoleByUsernameParams{ctx, username},
+		expectationOrigins: UserDBRepositoryMockGetRoleByUsernameExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetRoleByUsername.expectations = append(mmGetRoleByUsername.expectations, expectation)
+	return expectation
+}
+
+// Then sets up UserDBRepository.GetRoleByUsername return parameters for the expectation previously defined by the When method
+func (e *UserDBRepositoryMockGetRoleByUsernameExpectation) Then(i1 int64, err error) *UserDBRepositoryMock {
+	e.results = &UserDBRepositoryMockGetRoleByUsernameResults{i1, err}
+	return e.mock
+}
+
+// Times sets number of times UserDBRepository.GetRoleByUsername should be invoked
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Times(n uint64) *mUserDBRepositoryMockGetRoleByUsername {
+	if n == 0 {
+		mmGetRoleByUsername.mock.t.Fatalf("Times of UserDBRepositoryMock.GetRoleByUsername mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetRoleByUsername.expectedInvocations, n)
+	mmGetRoleByUsername.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetRoleByUsername
+}
+
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) invocationsDone() bool {
+	if len(mmGetRoleByUsername.expectations) == 0 && mmGetRoleByUsername.defaultExpectation == nil && mmGetRoleByUsername.mock.funcGetRoleByUsername == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetRoleByUsername.mock.afterGetRoleByUsernameCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetRoleByUsername.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetRoleByUsername implements mm_repository.UserDBRepository
+func (mmGetRoleByUsername *UserDBRepositoryMock) GetRoleByUsername(ctx context.Context, username string) (i1 int64, err error) {
+	mm_atomic.AddUint64(&mmGetRoleByUsername.beforeGetRoleByUsernameCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetRoleByUsername.afterGetRoleByUsernameCounter, 1)
+
+	mmGetRoleByUsername.t.Helper()
+
+	if mmGetRoleByUsername.inspectFuncGetRoleByUsername != nil {
+		mmGetRoleByUsername.inspectFuncGetRoleByUsername(ctx, username)
+	}
+
+	mm_params := UserDBRepositoryMockGetRoleByUsernameParams{ctx, username}
+
+	// Record call args
+	mmGetRoleByUsername.GetRoleByUsernameMock.mutex.Lock()
+	mmGetRoleByUsername.GetRoleByUsernameMock.callArgs = append(mmGetRoleByUsername.GetRoleByUsernameMock.callArgs, &mm_params)
+	mmGetRoleByUsername.GetRoleByUsernameMock.mutex.Unlock()
+
+	for _, e := range mmGetRoleByUsername.GetRoleByUsernameMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.i1, e.results.err
+		}
+	}
+
+	if mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.params
+		mm_want_ptrs := mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.paramPtrs
+
+		mm_got := UserDBRepositoryMockGetRoleByUsernameParams{ctx, username}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetRoleByUsername.t.Errorf("UserDBRepositoryMock.GetRoleByUsername got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.username != nil && !minimock.Equal(*mm_want_ptrs.username, mm_got.username) {
+				mmGetRoleByUsername.t.Errorf("UserDBRepositoryMock.GetRoleByUsername got unexpected parameter username, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.expectationOrigins.originUsername, *mm_want_ptrs.username, mm_got.username, minimock.Diff(*mm_want_ptrs.username, mm_got.username))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetRoleByUsername.t.Errorf("UserDBRepositoryMock.GetRoleByUsername got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetRoleByUsername.GetRoleByUsernameMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetRoleByUsername.t.Fatal("No results are set for the UserDBRepositoryMock.GetRoleByUsername")
+		}
+		return (*mm_results).i1, (*mm_results).err
+	}
+	if mmGetRoleByUsername.funcGetRoleByUsername != nil {
+		return mmGetRoleByUsername.funcGetRoleByUsername(ctx, username)
+	}
+	mmGetRoleByUsername.t.Fatalf("Unexpected call to UserDBRepositoryMock.GetRoleByUsername. %v %v", ctx, username)
+	return
+}
+
+// GetRoleByUsernameAfterCounter returns a count of finished UserDBRepositoryMock.GetRoleByUsername invocations
+func (mmGetRoleByUsername *UserDBRepositoryMock) GetRoleByUsernameAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetRoleByUsername.afterGetRoleByUsernameCounter)
+}
+
+// GetRoleByUsernameBeforeCounter returns a count of UserDBRepositoryMock.GetRoleByUsername invocations
+func (mmGetRoleByUsername *UserDBRepositoryMock) GetRoleByUsernameBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetRoleByUsername.beforeGetRoleByUsernameCounter)
+}
+
+// Calls returns a list of arguments used in each call to UserDBRepositoryMock.GetRoleByUsername.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetRoleByUsername *mUserDBRepositoryMockGetRoleByUsername) Calls() []*UserDBRepositoryMockGetRoleByUsernameParams {
+	mmGetRoleByUsername.mutex.RLock()
+
+	argCopy := make([]*UserDBRepositoryMockGetRoleByUsernameParams, len(mmGetRoleByUsername.callArgs))
+	copy(argCopy, mmGetRoleByUsername.callArgs)
+
+	mmGetRoleByUsername.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetRoleByUsernameDone returns true if the count of the GetRoleByUsername invocations corresponds
+// the number of defined expectations
+func (m *UserDBRepositoryMock) MinimockGetRoleByUsernameDone() bool {
+	if m.GetRoleByUsernameMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetRoleByUsernameMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetRoleByUsernameMock.invocationsDone()
+}
+
+// MinimockGetRoleByUsernameInspect logs each unmet expectation
+func (m *UserDBRepositoryMock) MinimockGetRoleByUsernameInspect() {
+	for _, e := range m.GetRoleByUsernameMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to UserDBRepositoryMock.GetRoleByUsername at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetRoleByUsernameCounter := mm_atomic.LoadUint64(&m.afterGetRoleByUsernameCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetRoleByUsernameMock.defaultExpectation != nil && afterGetRoleByUsernameCounter < 1 {
+		if m.GetRoleByUsernameMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to UserDBRepositoryMock.GetRoleByUsername at\n%s", m.GetRoleByUsernameMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to UserDBRepositoryMock.GetRoleByUsername at\n%s with params: %#v", m.GetRoleByUsernameMock.defaultExpectation.expectationOrigins.origin, *m.GetRoleByUsernameMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetRoleByUsername != nil && afterGetRoleByUsernameCounter < 1 {
+		m.t.Errorf("Expected call to UserDBRepositoryMock.GetRoleByUsername at\n%s", m.funcGetRoleByUsernameOrigin)
+	}
+
+	if !m.GetRoleByUsernameMock.invocationsDone() && afterGetRoleByUsernameCounter > 0 {
+		m.t.Errorf("Expected %d calls to UserDBRepositoryMock.GetRoleByUsername at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetRoleByUsernameMock.expectedInvocations), m.GetRoleByUsernameMock.expectedInvocationsOrigin, afterGetRoleByUsernameCounter)
+	}
+}
+
 type mUserDBRepositoryMockGetUsers struct {
 	optional           bool
 	mock               *UserDBRepositoryMock
@@ -1837,6 +2543,10 @@ func (m *UserDBRepositoryMock) MinimockFinish() {
 
 			m.MinimockGetInspect()
 
+			m.MinimockGetHashAndRoleByUsernameInspect()
+
+			m.MinimockGetRoleByUsernameInspect()
+
 			m.MinimockGetUsersInspect()
 
 			m.MinimockUpdateInspect()
@@ -1866,6 +2576,8 @@ func (m *UserDBRepositoryMock) minimockDone() bool {
 		m.MinimockCreateDone() &&
 		m.MinimockDeleteDone() &&
 		m.MinimockGetDone() &&
+		m.MinimockGetHashAndRoleByUsernameDone() &&
+		m.MinimockGetRoleByUsernameDone() &&
 		m.MinimockGetUsersDone() &&
 		m.MinimockUpdateDone()
 }

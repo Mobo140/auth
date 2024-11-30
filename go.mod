@@ -28,7 +28,7 @@ require (
 )
 
 require (
-	github.com/Mobo140/platform_common v1.2.0 // indirect
+	github.com/Mobo140/platform_common v1.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

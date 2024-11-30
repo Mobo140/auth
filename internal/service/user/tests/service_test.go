@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"testing"
 
-	repositoryTx "github.com/Mobo140/microservices/auth/internal/client/db"
-	dbTxMocks "github.com/Mobo140/microservices/auth/internal/client/db/mocks"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	repositoryMocks "github.com/Mobo140/microservices/auth/internal/repository/mocks"
 	userService "github.com/Mobo140/microservices/auth/internal/service/user"
+	repositoryTx "github.com/Mobo140/platform_common/pkg/db"
+	dbTxMocks "github.com/Mobo140/platform_common/pkg/db/mocks"
 	"github.com/brianvoe/gofakeit"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestCreate(t *testing.T) {
@@ -33,36 +34,34 @@ func TestCreate(t *testing.T) {
 		ctxValue = context.Background()
 		mc       = minimock.NewController(t)
 
-		id              = gofakeit.Int64()
-		name            = gofakeit.Name()
-		email           = gofakeit.Email()
-		password        = gofakeit.Password(true, true, true, true, true, 10)
-		passwordConfirm = gofakeit.Password(true, true, true, true, true, 10)
-		role            = (int64)(0)
+		id       = gofakeit.Int64()
+		name     = gofakeit.Name()
+		email    = gofakeit.Email()
+		password = gofakeit.Password(true, true, true, true, true, 10)
+		role     = (int64)(0)
 
-		repositoryErr  = fmt.Errorf("create userRepo error")
-		logErr         = fmt.Errorf("create log error")
-		transactionErr = fmt.Errorf("transaction error")
+		hashPassword, _ = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		repositoryErr   = fmt.Errorf("create userRepo error")
+		logErr          = fmt.Errorf("create log error")
+		transactionErr  = fmt.Errorf("transaction error")
 
 		user = &model.User{
-			Name:            name,
-			Email:           email,
-			Password:        password,
-			PasswordConfirm: passwordConfirm,
-			Role:            role,
+			Name:           name,
+			Email:          email,
+			HashedPassword: (string)(hashPassword),
+			Role:           role,
 		}
 
 		req = &model.User{
-			Name:            name,
-			Email:           email,
-			Password:        password,
-			PasswordConfirm: passwordConfirm,
-			Role:            role,
+			Name:           name,
+			Email:          email,
+			HashedPassword: (string)(hashPassword),
+			Role:           role,
 		}
 
-		logEntry = &model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Create user: Name=%s, Email=%s, Role=%d", name, email, role),
+		logEntry = &model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Create user: Name=%s, Email=%s, Role=%d", name, email, role),
 		}
 
 		unknownUser = (int64)(-1)
@@ -87,7 +86,7 @@ func TestCreate(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userDBRepo.CreateMock.Expect(ctxValue, user).Return(id, nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(nil)
 				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
 					return f(ctx)
 				})
@@ -138,7 +137,7 @@ func TestCreate(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.CreateMock.Expect(ctxValue, user).Return(id, nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(logErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
 				})
@@ -208,9 +207,9 @@ func TestGet(t *testing.T) {
 			},
 		}
 
-		logEntry = &model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Get user: ID: %d, Name: %s, Email: %s, Role: %d", id, name, email, role),
+		logEntry = &model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Get user: ID: %d, Name: %s, Email: %s, Role: %d", id, name, email, role),
 		}
 	)
 
@@ -233,7 +232,7 @@ func TestGet(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.GetMock.Expect(ctxValue, id).Return(info, nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(nil)
 				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
 					return f(ctx)
 				})
@@ -284,7 +283,7 @@ func TestGet(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userDBRepo.GetMock.Expect(ctxValue, id).Return(info, nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(logErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
 				})
@@ -410,8 +409,8 @@ func TestGetUsers(t *testing.T) {
 			},
 		}
 
-		logEntry = &model.LogEntry{
-			Activity: fmt.Sprintf("Get users: from %d to %d", params.Offset+1, params.Offset+(int64)(len(usersList))),
+		logEntry = &model.LogEntryUser{
+			Action: fmt.Sprintf("Get users: from %d to %d", params.Offset+1, params.Offset+(int64)(len(usersList))),
 		}
 	)
 
@@ -434,7 +433,7 @@ func TestGetUsers(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.GetUsersMock.Expect(ctxValue, params).Return(usersList, nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(nil)
 				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
 					return f(ctx)
 				})
@@ -485,7 +484,7 @@ func TestGetUsers(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.GetUsersMock.Expect(ctxValue, params).Return(usersList, nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(logErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
 				})
@@ -547,9 +546,9 @@ func TestUpdate(t *testing.T) {
 			Email: email,
 		}
 
-		logEntry = &model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Update user: Name=%s, Email=%s", name, email),
+		logEntry = &model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Update user: Name=%s, Email=%s", name, email),
 		}
 	)
 
@@ -575,7 +574,7 @@ func TestUpdate(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.UpdateMock.Expect(ctxValue, id, info).Return(nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(nil)
 				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
 					return f(ctx)
 				})
@@ -636,7 +635,7 @@ func TestUpdate(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.UpdateMock.Expect(ctxValue, id, info).Return(nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(logErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
 				})
@@ -684,9 +683,9 @@ func TestDelete(t *testing.T) {
 		logErr         = fmt.Errorf("get log error")
 		transactionErr = fmt.Errorf("transaction error")
 
-		logEntry = &model.LogEntry{
-			UserID:   id,
-			Activity: fmt.Sprintf("Delete user: ID=%d", id),
+		logEntry = &model.LogEntryUser{
+			UserID: id,
+			Action: fmt.Sprintf("Delete user: ID=%d", id),
 		}
 	)
 
@@ -703,7 +702,7 @@ func TestDelete(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.DeleteMock.Expect(ctxValue, id).Return(nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(nil)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(nil)
 				txManager.ReadCommitedMock.Set(func(ctx context.Context, f repositoryTx.Handler) error {
 					return f(ctx)
 				})
@@ -742,7 +741,7 @@ func TestDelete(t *testing.T) {
 				txManager *dbTxMocks.TxManagerMock,
 			) {
 				userRepo.DeleteMock.Expect(ctxValue, id).Return(nil)
-				logRepo.CreateMock.Expect(ctxValue, logEntry).Return(logErr)
+				logRepo.CreateLogUserMock.Expect(ctxValue, logEntry).Return(logErr)
 				txManager.ReadCommitedMock.Set(func(ctxValue context.Context, f repositoryTx.Handler) error {
 					return f(ctxValue)
 				})

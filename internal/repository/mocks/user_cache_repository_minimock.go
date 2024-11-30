@@ -19,19 +19,19 @@ type UserCacheRepositoryMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcCreate          func(ctx context.Context, id int64, user *model.User) (i1 int64, err error)
-	funcCreateOrigin    string
-	inspectFuncCreate   func(ctx context.Context, id int64, user *model.User)
-	afterCreateCounter  uint64
-	beforeCreateCounter uint64
-	CreateMock          mUserCacheRepositoryMockCreate
+	funcGetHashAndRoleByUsername          func(ctx context.Context, username string) (up1 *model.UserAuthData, err error)
+	funcGetHashAndRoleByUsernameOrigin    string
+	inspectFuncGetHashAndRoleByUsername   func(ctx context.Context, username string)
+	afterGetHashAndRoleByUsernameCounter  uint64
+	beforeGetHashAndRoleByUsernameCounter uint64
+	GetHashAndRoleByUsernameMock          mUserCacheRepositoryMockGetHashAndRoleByUsername
 
-	funcGet          func(ctx context.Context, id int64) (up1 *model.UserInfo, err error)
-	funcGetOrigin    string
-	inspectFuncGet   func(ctx context.Context, id int64)
-	afterGetCounter  uint64
-	beforeGetCounter uint64
-	GetMock          mUserCacheRepositoryMockGet
+	funcSetHashAndRole          func(ctx context.Context, username string, data *model.UserAuthData) (err error)
+	funcSetHashAndRoleOrigin    string
+	inspectFuncSetHashAndRole   func(ctx context.Context, username string, data *model.UserAuthData)
+	afterSetHashAndRoleCounter  uint64
+	beforeSetHashAndRoleCounter uint64
+	SetHashAndRoleMock          mUserCacheRepositoryMockSetHashAndRole
 }
 
 // NewUserCacheRepositoryMock returns a mock for mm_repository.UserCacheRepository
@@ -42,67 +42,64 @@ func NewUserCacheRepositoryMock(t minimock.Tester) *UserCacheRepositoryMock {
 		controller.RegisterMocker(m)
 	}
 
-	m.CreateMock = mUserCacheRepositoryMockCreate{mock: m}
-	m.CreateMock.callArgs = []*UserCacheRepositoryMockCreateParams{}
+	m.GetHashAndRoleByUsernameMock = mUserCacheRepositoryMockGetHashAndRoleByUsername{mock: m}
+	m.GetHashAndRoleByUsernameMock.callArgs = []*UserCacheRepositoryMockGetHashAndRoleByUsernameParams{}
 
-	m.GetMock = mUserCacheRepositoryMockGet{mock: m}
-	m.GetMock.callArgs = []*UserCacheRepositoryMockGetParams{}
+	m.SetHashAndRoleMock = mUserCacheRepositoryMockSetHashAndRole{mock: m}
+	m.SetHashAndRoleMock.callArgs = []*UserCacheRepositoryMockSetHashAndRoleParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
 	return m
 }
 
-type mUserCacheRepositoryMockCreate struct {
+type mUserCacheRepositoryMockGetHashAndRoleByUsername struct {
 	optional           bool
 	mock               *UserCacheRepositoryMock
-	defaultExpectation *UserCacheRepositoryMockCreateExpectation
-	expectations       []*UserCacheRepositoryMockCreateExpectation
+	defaultExpectation *UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation
+	expectations       []*UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation
 
-	callArgs []*UserCacheRepositoryMockCreateParams
+	callArgs []*UserCacheRepositoryMockGetHashAndRoleByUsernameParams
 	mutex    sync.RWMutex
 
 	expectedInvocations       uint64
 	expectedInvocationsOrigin string
 }
 
-// UserCacheRepositoryMockCreateExpectation specifies expectation struct of the UserCacheRepository.Create
-type UserCacheRepositoryMockCreateExpectation struct {
+// UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation specifies expectation struct of the UserCacheRepository.GetHashAndRoleByUsername
+type UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation struct {
 	mock               *UserCacheRepositoryMock
-	params             *UserCacheRepositoryMockCreateParams
-	paramPtrs          *UserCacheRepositoryMockCreateParamPtrs
-	expectationOrigins UserCacheRepositoryMockCreateExpectationOrigins
-	results            *UserCacheRepositoryMockCreateResults
+	params             *UserCacheRepositoryMockGetHashAndRoleByUsernameParams
+	paramPtrs          *UserCacheRepositoryMockGetHashAndRoleByUsernameParamPtrs
+	expectationOrigins UserCacheRepositoryMockGetHashAndRoleByUsernameExpectationOrigins
+	results            *UserCacheRepositoryMockGetHashAndRoleByUsernameResults
 	returnOrigin       string
 	Counter            uint64
 }
 
-// UserCacheRepositoryMockCreateParams contains parameters of the UserCacheRepository.Create
-type UserCacheRepositoryMockCreateParams struct {
-	ctx  context.Context
-	id   int64
-	user *model.User
+// UserCacheRepositoryMockGetHashAndRoleByUsernameParams contains parameters of the UserCacheRepository.GetHashAndRoleByUsername
+type UserCacheRepositoryMockGetHashAndRoleByUsernameParams struct {
+	ctx      context.Context
+	username string
 }
 
-// UserCacheRepositoryMockCreateParamPtrs contains pointers to parameters of the UserCacheRepository.Create
-type UserCacheRepositoryMockCreateParamPtrs struct {
-	ctx  *context.Context
-	id   *int64
-	user **model.User
+// UserCacheRepositoryMockGetHashAndRoleByUsernameParamPtrs contains pointers to parameters of the UserCacheRepository.GetHashAndRoleByUsername
+type UserCacheRepositoryMockGetHashAndRoleByUsernameParamPtrs struct {
+	ctx      *context.Context
+	username *string
 }
 
-// UserCacheRepositoryMockCreateResults contains results of the UserCacheRepository.Create
-type UserCacheRepositoryMockCreateResults struct {
-	i1  int64
+// UserCacheRepositoryMockGetHashAndRoleByUsernameResults contains results of the UserCacheRepository.GetHashAndRoleByUsername
+type UserCacheRepositoryMockGetHashAndRoleByUsernameResults struct {
+	up1 *model.UserAuthData
 	err error
 }
 
-// UserCacheRepositoryMockCreateOrigins contains origins of expectations of the UserCacheRepository.Create
-type UserCacheRepositoryMockCreateExpectationOrigins struct {
-	origin     string
-	originCtx  string
-	originId   string
-	originUser string
+// UserCacheRepositoryMockGetHashAndRoleByUsernameOrigins contains origins of expectations of the UserCacheRepository.GetHashAndRoleByUsername
+type UserCacheRepositoryMockGetHashAndRoleByUsernameExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originUsername string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -110,663 +107,665 @@ type UserCacheRepositoryMockCreateExpectationOrigins struct {
 // Optional() makes method check to work in '0 or more' mode.
 // It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
 // catch the problems when the expected method call is totally skipped during test run.
-func (mmCreate *mUserCacheRepositoryMockCreate) Optional() *mUserCacheRepositoryMockCreate {
-	mmCreate.optional = true
-	return mmCreate
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Optional() *mUserCacheRepositoryMockGetHashAndRoleByUsername {
+	mmGetHashAndRoleByUsername.optional = true
+	return mmGetHashAndRoleByUsername
 }
 
-// Expect sets up expected params for UserCacheRepository.Create
-func (mmCreate *mUserCacheRepositoryMockCreate) Expect(ctx context.Context, id int64, user *model.User) *mUserCacheRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Set")
+// Expect sets up expected params for UserCacheRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Expect(ctx context.Context, username string) *mUserCacheRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &UserCacheRepositoryMockCreateExpectation{}
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation{}
 	}
 
-	if mmCreate.defaultExpectation.paramPtrs != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by ExpectParams functions")
+	if mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by ExpectParams functions")
 	}
 
-	mmCreate.defaultExpectation.params = &UserCacheRepositoryMockCreateParams{ctx, id, user}
-	mmCreate.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmCreate.expectations {
-		if minimock.Equal(e.params, mmCreate.defaultExpectation.params) {
-			mmCreate.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreate.defaultExpectation.params)
+	mmGetHashAndRoleByUsername.defaultExpectation.params = &UserCacheRepositoryMockGetHashAndRoleByUsernameParams{ctx, username}
+	mmGetHashAndRoleByUsername.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetHashAndRoleByUsername.expectations {
+		if minimock.Equal(e.params, mmGetHashAndRoleByUsername.defaultExpectation.params) {
+			mmGetHashAndRoleByUsername.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetHashAndRoleByUsername.defaultExpectation.params)
 		}
 	}
 
-	return mmCreate
+	return mmGetHashAndRoleByUsername
 }
 
-// ExpectCtxParam1 sets up expected param ctx for UserCacheRepository.Create
-func (mmCreate *mUserCacheRepositoryMockCreate) ExpectCtxParam1(ctx context.Context) *mUserCacheRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Set")
+// ExpectCtxParam1 sets up expected param ctx for UserCacheRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) ExpectCtxParam1(ctx context.Context) *mUserCacheRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &UserCacheRepositoryMockCreateExpectation{}
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation{}
 	}
 
-	if mmCreate.defaultExpectation.params != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Expect")
+	if mmGetHashAndRoleByUsername.defaultExpectation.params != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Expect")
 	}
 
-	if mmCreate.defaultExpectation.paramPtrs == nil {
-		mmCreate.defaultExpectation.paramPtrs = &UserCacheRepositoryMockCreateParamPtrs{}
+	if mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs = &UserCacheRepositoryMockGetHashAndRoleByUsernameParamPtrs{}
 	}
-	mmCreate.defaultExpectation.paramPtrs.ctx = &ctx
-	mmCreate.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+	mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetHashAndRoleByUsername.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
 
-	return mmCreate
+	return mmGetHashAndRoleByUsername
 }
 
-// ExpectIdParam2 sets up expected param id for UserCacheRepository.Create
-func (mmCreate *mUserCacheRepositoryMockCreate) ExpectIdParam2(id int64) *mUserCacheRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Set")
+// ExpectUsernameParam2 sets up expected param username for UserCacheRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) ExpectUsernameParam2(username string) *mUserCacheRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &UserCacheRepositoryMockCreateExpectation{}
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation{}
 	}
 
-	if mmCreate.defaultExpectation.params != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Expect")
+	if mmGetHashAndRoleByUsername.defaultExpectation.params != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Expect")
 	}
 
-	if mmCreate.defaultExpectation.paramPtrs == nil {
-		mmCreate.defaultExpectation.paramPtrs = &UserCacheRepositoryMockCreateParamPtrs{}
+	if mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs = &UserCacheRepositoryMockGetHashAndRoleByUsernameParamPtrs{}
 	}
-	mmCreate.defaultExpectation.paramPtrs.id = &id
-	mmCreate.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+	mmGetHashAndRoleByUsername.defaultExpectation.paramPtrs.username = &username
+	mmGetHashAndRoleByUsername.defaultExpectation.expectationOrigins.originUsername = minimock.CallerInfo(1)
 
-	return mmCreate
+	return mmGetHashAndRoleByUsername
 }
 
-// ExpectUserParam3 sets up expected param user for UserCacheRepository.Create
-func (mmCreate *mUserCacheRepositoryMockCreate) ExpectUserParam3(user *model.User) *mUserCacheRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Set")
+// Inspect accepts an inspector function that has same arguments as the UserCacheRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Inspect(f func(ctx context.Context, username string)) *mUserCacheRepositoryMockGetHashAndRoleByUsername {
+	if mmGetHashAndRoleByUsername.mock.inspectFuncGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Inspect function is already set for UserCacheRepositoryMock.GetHashAndRoleByUsername")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &UserCacheRepositoryMockCreateExpectation{}
-	}
+	mmGetHashAndRoleByUsername.mock.inspectFuncGetHashAndRoleByUsername = f
 
-	if mmCreate.defaultExpectation.params != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Expect")
-	}
-
-	if mmCreate.defaultExpectation.paramPtrs == nil {
-		mmCreate.defaultExpectation.paramPtrs = &UserCacheRepositoryMockCreateParamPtrs{}
-	}
-	mmCreate.defaultExpectation.paramPtrs.user = &user
-	mmCreate.defaultExpectation.expectationOrigins.originUser = minimock.CallerInfo(1)
-
-	return mmCreate
+	return mmGetHashAndRoleByUsername
 }
 
-// Inspect accepts an inspector function that has same arguments as the UserCacheRepository.Create
-func (mmCreate *mUserCacheRepositoryMockCreate) Inspect(f func(ctx context.Context, id int64, user *model.User)) *mUserCacheRepositoryMockCreate {
-	if mmCreate.mock.inspectFuncCreate != nil {
-		mmCreate.mock.t.Fatalf("Inspect function is already set for UserCacheRepositoryMock.Create")
+// Return sets up results that will be returned by UserCacheRepository.GetHashAndRoleByUsername
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Return(up1 *model.UserAuthData, err error) *UserCacheRepositoryMock {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
 	}
 
-	mmCreate.mock.inspectFuncCreate = f
-
-	return mmCreate
+	if mmGetHashAndRoleByUsername.defaultExpectation == nil {
+		mmGetHashAndRoleByUsername.defaultExpectation = &UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation{mock: mmGetHashAndRoleByUsername.mock}
+	}
+	mmGetHashAndRoleByUsername.defaultExpectation.results = &UserCacheRepositoryMockGetHashAndRoleByUsernameResults{up1, err}
+	mmGetHashAndRoleByUsername.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetHashAndRoleByUsername.mock
 }
 
-// Return sets up results that will be returned by UserCacheRepository.Create
-func (mmCreate *mUserCacheRepositoryMockCreate) Return(i1 int64, err error) *UserCacheRepositoryMock {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Set")
+// Set uses given function f to mock the UserCacheRepository.GetHashAndRoleByUsername method
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Set(f func(ctx context.Context, username string) (up1 *model.UserAuthData, err error)) *UserCacheRepositoryMock {
+	if mmGetHashAndRoleByUsername.defaultExpectation != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Default expectation is already set for the UserCacheRepository.GetHashAndRoleByUsername method")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &UserCacheRepositoryMockCreateExpectation{mock: mmCreate.mock}
+	if len(mmGetHashAndRoleByUsername.expectations) > 0 {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Some expectations are already set for the UserCacheRepository.GetHashAndRoleByUsername method")
 	}
-	mmCreate.defaultExpectation.results = &UserCacheRepositoryMockCreateResults{i1, err}
-	mmCreate.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmCreate.mock
+
+	mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername = f
+	mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsernameOrigin = minimock.CallerInfo(1)
+	return mmGetHashAndRoleByUsername.mock
 }
 
-// Set uses given function f to mock the UserCacheRepository.Create method
-func (mmCreate *mUserCacheRepositoryMockCreate) Set(f func(ctx context.Context, id int64, user *model.User) (i1 int64, err error)) *UserCacheRepositoryMock {
-	if mmCreate.defaultExpectation != nil {
-		mmCreate.mock.t.Fatalf("Default expectation is already set for the UserCacheRepository.Create method")
-	}
-
-	if len(mmCreate.expectations) > 0 {
-		mmCreate.mock.t.Fatalf("Some expectations are already set for the UserCacheRepository.Create method")
-	}
-
-	mmCreate.mock.funcCreate = f
-	mmCreate.mock.funcCreateOrigin = minimock.CallerInfo(1)
-	return mmCreate.mock
-}
-
-// When sets expectation for the UserCacheRepository.Create which will trigger the result defined by the following
+// When sets expectation for the UserCacheRepository.GetHashAndRoleByUsername which will trigger the result defined by the following
 // Then helper
-func (mmCreate *mUserCacheRepositoryMockCreate) When(ctx context.Context, id int64, user *model.User) *UserCacheRepositoryMockCreateExpectation {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("UserCacheRepositoryMock.Create mock is already set by Set")
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) When(ctx context.Context, username string) *UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation {
+	if mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("UserCacheRepositoryMock.GetHashAndRoleByUsername mock is already set by Set")
 	}
 
-	expectation := &UserCacheRepositoryMockCreateExpectation{
-		mock:               mmCreate.mock,
-		params:             &UserCacheRepositoryMockCreateParams{ctx, id, user},
-		expectationOrigins: UserCacheRepositoryMockCreateExpectationOrigins{origin: minimock.CallerInfo(1)},
+	expectation := &UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation{
+		mock:               mmGetHashAndRoleByUsername.mock,
+		params:             &UserCacheRepositoryMockGetHashAndRoleByUsernameParams{ctx, username},
+		expectationOrigins: UserCacheRepositoryMockGetHashAndRoleByUsernameExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
-	mmCreate.expectations = append(mmCreate.expectations, expectation)
+	mmGetHashAndRoleByUsername.expectations = append(mmGetHashAndRoleByUsername.expectations, expectation)
 	return expectation
 }
 
-// Then sets up UserCacheRepository.Create return parameters for the expectation previously defined by the When method
-func (e *UserCacheRepositoryMockCreateExpectation) Then(i1 int64, err error) *UserCacheRepositoryMock {
-	e.results = &UserCacheRepositoryMockCreateResults{i1, err}
+// Then sets up UserCacheRepository.GetHashAndRoleByUsername return parameters for the expectation previously defined by the When method
+func (e *UserCacheRepositoryMockGetHashAndRoleByUsernameExpectation) Then(up1 *model.UserAuthData, err error) *UserCacheRepositoryMock {
+	e.results = &UserCacheRepositoryMockGetHashAndRoleByUsernameResults{up1, err}
 	return e.mock
 }
 
-// Times sets number of times UserCacheRepository.Create should be invoked
-func (mmCreate *mUserCacheRepositoryMockCreate) Times(n uint64) *mUserCacheRepositoryMockCreate {
+// Times sets number of times UserCacheRepository.GetHashAndRoleByUsername should be invoked
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Times(n uint64) *mUserCacheRepositoryMockGetHashAndRoleByUsername {
 	if n == 0 {
-		mmCreate.mock.t.Fatalf("Times of UserCacheRepositoryMock.Create mock can not be zero")
+		mmGetHashAndRoleByUsername.mock.t.Fatalf("Times of UserCacheRepositoryMock.GetHashAndRoleByUsername mock can not be zero")
 	}
-	mm_atomic.StoreUint64(&mmCreate.expectedInvocations, n)
-	mmCreate.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmCreate
+	mm_atomic.StoreUint64(&mmGetHashAndRoleByUsername.expectedInvocations, n)
+	mmGetHashAndRoleByUsername.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetHashAndRoleByUsername
 }
 
-func (mmCreate *mUserCacheRepositoryMockCreate) invocationsDone() bool {
-	if len(mmCreate.expectations) == 0 && mmCreate.defaultExpectation == nil && mmCreate.mock.funcCreate == nil {
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) invocationsDone() bool {
+	if len(mmGetHashAndRoleByUsername.expectations) == 0 && mmGetHashAndRoleByUsername.defaultExpectation == nil && mmGetHashAndRoleByUsername.mock.funcGetHashAndRoleByUsername == nil {
 		return true
 	}
 
-	totalInvocations := mm_atomic.LoadUint64(&mmCreate.mock.afterCreateCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmCreate.expectedInvocations)
+	totalInvocations := mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.mock.afterGetHashAndRoleByUsernameCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.expectedInvocations)
 
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// Create implements mm_repository.UserCacheRepository
-func (mmCreate *UserCacheRepositoryMock) Create(ctx context.Context, id int64, user *model.User) (i1 int64, err error) {
-	mm_atomic.AddUint64(&mmCreate.beforeCreateCounter, 1)
-	defer mm_atomic.AddUint64(&mmCreate.afterCreateCounter, 1)
+// GetHashAndRoleByUsername implements mm_repository.UserCacheRepository
+func (mmGetHashAndRoleByUsername *UserCacheRepositoryMock) GetHashAndRoleByUsername(ctx context.Context, username string) (up1 *model.UserAuthData, err error) {
+	mm_atomic.AddUint64(&mmGetHashAndRoleByUsername.beforeGetHashAndRoleByUsernameCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetHashAndRoleByUsername.afterGetHashAndRoleByUsernameCounter, 1)
 
-	mmCreate.t.Helper()
+	mmGetHashAndRoleByUsername.t.Helper()
 
-	if mmCreate.inspectFuncCreate != nil {
-		mmCreate.inspectFuncCreate(ctx, id, user)
+	if mmGetHashAndRoleByUsername.inspectFuncGetHashAndRoleByUsername != nil {
+		mmGetHashAndRoleByUsername.inspectFuncGetHashAndRoleByUsername(ctx, username)
 	}
 
-	mm_params := UserCacheRepositoryMockCreateParams{ctx, id, user}
+	mm_params := UserCacheRepositoryMockGetHashAndRoleByUsernameParams{ctx, username}
 
 	// Record call args
-	mmCreate.CreateMock.mutex.Lock()
-	mmCreate.CreateMock.callArgs = append(mmCreate.CreateMock.callArgs, &mm_params)
-	mmCreate.CreateMock.mutex.Unlock()
-
-	for _, e := range mmCreate.CreateMock.expectations {
-		if minimock.Equal(*e.params, mm_params) {
-			mm_atomic.AddUint64(&e.Counter, 1)
-			return e.results.i1, e.results.err
-		}
-	}
-
-	if mmCreate.CreateMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmCreate.CreateMock.defaultExpectation.Counter, 1)
-		mm_want := mmCreate.CreateMock.defaultExpectation.params
-		mm_want_ptrs := mmCreate.CreateMock.defaultExpectation.paramPtrs
-
-		mm_got := UserCacheRepositoryMockCreateParams{ctx, id, user}
-
-		if mm_want_ptrs != nil {
-
-			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmCreate.t.Errorf("UserCacheRepositoryMock.Create got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreate.CreateMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
-			}
-
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmCreate.t.Errorf("UserCacheRepositoryMock.Create got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreate.CreateMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
-			}
-
-			if mm_want_ptrs.user != nil && !minimock.Equal(*mm_want_ptrs.user, mm_got.user) {
-				mmCreate.t.Errorf("UserCacheRepositoryMock.Create got unexpected parameter user, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreate.CreateMock.defaultExpectation.expectationOrigins.originUser, *mm_want_ptrs.user, mm_got.user, minimock.Diff(*mm_want_ptrs.user, mm_got.user))
-			}
-
-		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmCreate.t.Errorf("UserCacheRepositoryMock.Create got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmCreate.CreateMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
-		}
-
-		mm_results := mmCreate.CreateMock.defaultExpectation.results
-		if mm_results == nil {
-			mmCreate.t.Fatal("No results are set for the UserCacheRepositoryMock.Create")
-		}
-		return (*mm_results).i1, (*mm_results).err
-	}
-	if mmCreate.funcCreate != nil {
-		return mmCreate.funcCreate(ctx, id, user)
-	}
-	mmCreate.t.Fatalf("Unexpected call to UserCacheRepositoryMock.Create. %v %v %v", ctx, id, user)
-	return
-}
-
-// CreateAfterCounter returns a count of finished UserCacheRepositoryMock.Create invocations
-func (mmCreate *UserCacheRepositoryMock) CreateAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreate.afterCreateCounter)
-}
-
-// CreateBeforeCounter returns a count of UserCacheRepositoryMock.Create invocations
-func (mmCreate *UserCacheRepositoryMock) CreateBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreate.beforeCreateCounter)
-}
-
-// Calls returns a list of arguments used in each call to UserCacheRepositoryMock.Create.
-// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmCreate *mUserCacheRepositoryMockCreate) Calls() []*UserCacheRepositoryMockCreateParams {
-	mmCreate.mutex.RLock()
-
-	argCopy := make([]*UserCacheRepositoryMockCreateParams, len(mmCreate.callArgs))
-	copy(argCopy, mmCreate.callArgs)
-
-	mmCreate.mutex.RUnlock()
-
-	return argCopy
-}
-
-// MinimockCreateDone returns true if the count of the Create invocations corresponds
-// the number of defined expectations
-func (m *UserCacheRepositoryMock) MinimockCreateDone() bool {
-	if m.CreateMock.optional {
-		// Optional methods provide '0 or more' call count restriction.
-		return true
-	}
-
-	for _, e := range m.CreateMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			return false
-		}
-	}
-
-	return m.CreateMock.invocationsDone()
-}
-
-// MinimockCreateInspect logs each unmet expectation
-func (m *UserCacheRepositoryMock) MinimockCreateInspect() {
-	for _, e := range m.CreateMock.expectations {
-		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to UserCacheRepositoryMock.Create at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
-		}
-	}
-
-	afterCreateCounter := mm_atomic.LoadUint64(&m.afterCreateCounter)
-	// if default expectation was set then invocations count should be greater than zero
-	if m.CreateMock.defaultExpectation != nil && afterCreateCounter < 1 {
-		if m.CreateMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to UserCacheRepositoryMock.Create at\n%s", m.CreateMock.defaultExpectation.returnOrigin)
-		} else {
-			m.t.Errorf("Expected call to UserCacheRepositoryMock.Create at\n%s with params: %#v", m.CreateMock.defaultExpectation.expectationOrigins.origin, *m.CreateMock.defaultExpectation.params)
-		}
-	}
-	// if func was set then invocations count should be greater than zero
-	if m.funcCreate != nil && afterCreateCounter < 1 {
-		m.t.Errorf("Expected call to UserCacheRepositoryMock.Create at\n%s", m.funcCreateOrigin)
-	}
-
-	if !m.CreateMock.invocationsDone() && afterCreateCounter > 0 {
-		m.t.Errorf("Expected %d calls to UserCacheRepositoryMock.Create at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.CreateMock.expectedInvocations), m.CreateMock.expectedInvocationsOrigin, afterCreateCounter)
-	}
-}
-
-type mUserCacheRepositoryMockGet struct {
-	optional           bool
-	mock               *UserCacheRepositoryMock
-	defaultExpectation *UserCacheRepositoryMockGetExpectation
-	expectations       []*UserCacheRepositoryMockGetExpectation
-
-	callArgs []*UserCacheRepositoryMockGetParams
-	mutex    sync.RWMutex
-
-	expectedInvocations       uint64
-	expectedInvocationsOrigin string
-}
-
-// UserCacheRepositoryMockGetExpectation specifies expectation struct of the UserCacheRepository.Get
-type UserCacheRepositoryMockGetExpectation struct {
-	mock               *UserCacheRepositoryMock
-	params             *UserCacheRepositoryMockGetParams
-	paramPtrs          *UserCacheRepositoryMockGetParamPtrs
-	expectationOrigins UserCacheRepositoryMockGetExpectationOrigins
-	results            *UserCacheRepositoryMockGetResults
-	returnOrigin       string
-	Counter            uint64
-}
-
-// UserCacheRepositoryMockGetParams contains parameters of the UserCacheRepository.Get
-type UserCacheRepositoryMockGetParams struct {
-	ctx context.Context
-	id  int64
-}
-
-// UserCacheRepositoryMockGetParamPtrs contains pointers to parameters of the UserCacheRepository.Get
-type UserCacheRepositoryMockGetParamPtrs struct {
-	ctx *context.Context
-	id  *int64
-}
-
-// UserCacheRepositoryMockGetResults contains results of the UserCacheRepository.Get
-type UserCacheRepositoryMockGetResults struct {
-	up1 *model.UserInfo
-	err error
-}
-
-// UserCacheRepositoryMockGetOrigins contains origins of expectations of the UserCacheRepository.Get
-type UserCacheRepositoryMockGetExpectationOrigins struct {
-	origin    string
-	originCtx string
-	originId  string
-}
-
-// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
-// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
-// Optional() makes method check to work in '0 or more' mode.
-// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
-// catch the problems when the expected method call is totally skipped during test run.
-func (mmGet *mUserCacheRepositoryMockGet) Optional() *mUserCacheRepositoryMockGet {
-	mmGet.optional = true
-	return mmGet
-}
-
-// Expect sets up expected params for UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) Expect(ctx context.Context, id int64) *mUserCacheRepositoryMockGet {
-	if mmGet.mock.funcGet != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
-	}
-
-	if mmGet.defaultExpectation == nil {
-		mmGet.defaultExpectation = &UserCacheRepositoryMockGetExpectation{}
-	}
-
-	if mmGet.defaultExpectation.paramPtrs != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by ExpectParams functions")
-	}
-
-	mmGet.defaultExpectation.params = &UserCacheRepositoryMockGetParams{ctx, id}
-	mmGet.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmGet.expectations {
-		if minimock.Equal(e.params, mmGet.defaultExpectation.params) {
-			mmGet.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGet.defaultExpectation.params)
-		}
-	}
-
-	return mmGet
-}
-
-// ExpectCtxParam1 sets up expected param ctx for UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) ExpectCtxParam1(ctx context.Context) *mUserCacheRepositoryMockGet {
-	if mmGet.mock.funcGet != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
-	}
-
-	if mmGet.defaultExpectation == nil {
-		mmGet.defaultExpectation = &UserCacheRepositoryMockGetExpectation{}
-	}
-
-	if mmGet.defaultExpectation.params != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Expect")
-	}
-
-	if mmGet.defaultExpectation.paramPtrs == nil {
-		mmGet.defaultExpectation.paramPtrs = &UserCacheRepositoryMockGetParamPtrs{}
-	}
-	mmGet.defaultExpectation.paramPtrs.ctx = &ctx
-	mmGet.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
-
-	return mmGet
-}
-
-// ExpectIdParam2 sets up expected param id for UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) ExpectIdParam2(id int64) *mUserCacheRepositoryMockGet {
-	if mmGet.mock.funcGet != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
-	}
-
-	if mmGet.defaultExpectation == nil {
-		mmGet.defaultExpectation = &UserCacheRepositoryMockGetExpectation{}
-	}
-
-	if mmGet.defaultExpectation.params != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Expect")
-	}
-
-	if mmGet.defaultExpectation.paramPtrs == nil {
-		mmGet.defaultExpectation.paramPtrs = &UserCacheRepositoryMockGetParamPtrs{}
-	}
-	mmGet.defaultExpectation.paramPtrs.id = &id
-	mmGet.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
-
-	return mmGet
-}
-
-// Inspect accepts an inspector function that has same arguments as the UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) Inspect(f func(ctx context.Context, id int64)) *mUserCacheRepositoryMockGet {
-	if mmGet.mock.inspectFuncGet != nil {
-		mmGet.mock.t.Fatalf("Inspect function is already set for UserCacheRepositoryMock.Get")
-	}
-
-	mmGet.mock.inspectFuncGet = f
-
-	return mmGet
-}
-
-// Return sets up results that will be returned by UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) Return(up1 *model.UserInfo, err error) *UserCacheRepositoryMock {
-	if mmGet.mock.funcGet != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
-	}
-
-	if mmGet.defaultExpectation == nil {
-		mmGet.defaultExpectation = &UserCacheRepositoryMockGetExpectation{mock: mmGet.mock}
-	}
-	mmGet.defaultExpectation.results = &UserCacheRepositoryMockGetResults{up1, err}
-	mmGet.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmGet.mock
-}
-
-// Set uses given function f to mock the UserCacheRepository.Get method
-func (mmGet *mUserCacheRepositoryMockGet) Set(f func(ctx context.Context, id int64) (up1 *model.UserInfo, err error)) *UserCacheRepositoryMock {
-	if mmGet.defaultExpectation != nil {
-		mmGet.mock.t.Fatalf("Default expectation is already set for the UserCacheRepository.Get method")
-	}
-
-	if len(mmGet.expectations) > 0 {
-		mmGet.mock.t.Fatalf("Some expectations are already set for the UserCacheRepository.Get method")
-	}
-
-	mmGet.mock.funcGet = f
-	mmGet.mock.funcGetOrigin = minimock.CallerInfo(1)
-	return mmGet.mock
-}
-
-// When sets expectation for the UserCacheRepository.Get which will trigger the result defined by the following
-// Then helper
-func (mmGet *mUserCacheRepositoryMockGet) When(ctx context.Context, id int64) *UserCacheRepositoryMockGetExpectation {
-	if mmGet.mock.funcGet != nil {
-		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
-	}
-
-	expectation := &UserCacheRepositoryMockGetExpectation{
-		mock:               mmGet.mock,
-		params:             &UserCacheRepositoryMockGetParams{ctx, id},
-		expectationOrigins: UserCacheRepositoryMockGetExpectationOrigins{origin: minimock.CallerInfo(1)},
-	}
-	mmGet.expectations = append(mmGet.expectations, expectation)
-	return expectation
-}
-
-// Then sets up UserCacheRepository.Get return parameters for the expectation previously defined by the When method
-func (e *UserCacheRepositoryMockGetExpectation) Then(up1 *model.UserInfo, err error) *UserCacheRepositoryMock {
-	e.results = &UserCacheRepositoryMockGetResults{up1, err}
-	return e.mock
-}
-
-// Times sets number of times UserCacheRepository.Get should be invoked
-func (mmGet *mUserCacheRepositoryMockGet) Times(n uint64) *mUserCacheRepositoryMockGet {
-	if n == 0 {
-		mmGet.mock.t.Fatalf("Times of UserCacheRepositoryMock.Get mock can not be zero")
-	}
-	mm_atomic.StoreUint64(&mmGet.expectedInvocations, n)
-	mmGet.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmGet
-}
-
-func (mmGet *mUserCacheRepositoryMockGet) invocationsDone() bool {
-	if len(mmGet.expectations) == 0 && mmGet.defaultExpectation == nil && mmGet.mock.funcGet == nil {
-		return true
-	}
-
-	totalInvocations := mm_atomic.LoadUint64(&mmGet.mock.afterGetCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmGet.expectedInvocations)
-
-	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
-}
-
-// Get implements mm_repository.UserCacheRepository
-func (mmGet *UserCacheRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.UserInfo, err error) {
-	mm_atomic.AddUint64(&mmGet.beforeGetCounter, 1)
-	defer mm_atomic.AddUint64(&mmGet.afterGetCounter, 1)
-
-	mmGet.t.Helper()
-
-	if mmGet.inspectFuncGet != nil {
-		mmGet.inspectFuncGet(ctx, id)
-	}
-
-	mm_params := UserCacheRepositoryMockGetParams{ctx, id}
-
-	// Record call args
-	mmGet.GetMock.mutex.Lock()
-	mmGet.GetMock.callArgs = append(mmGet.GetMock.callArgs, &mm_params)
-	mmGet.GetMock.mutex.Unlock()
-
-	for _, e := range mmGet.GetMock.expectations {
+	mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.mutex.Lock()
+	mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.callArgs = append(mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.callArgs, &mm_params)
+	mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.mutex.Unlock()
+
+	for _, e := range mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
 			return e.results.up1, e.results.err
 		}
 	}
 
-	if mmGet.GetMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmGet.GetMock.defaultExpectation.Counter, 1)
-		mm_want := mmGet.GetMock.defaultExpectation.params
-		mm_want_ptrs := mmGet.GetMock.defaultExpectation.paramPtrs
+	if mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.params
+		mm_want_ptrs := mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.paramPtrs
 
-		mm_got := UserCacheRepositoryMockGetParams{ctx, id}
+		mm_got := UserCacheRepositoryMockGetHashAndRoleByUsernameParams{ctx, username}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmGet.t.Errorf("UserCacheRepositoryMock.Get got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGet.GetMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+				mmGetHashAndRoleByUsername.t.Errorf("UserCacheRepositoryMock.GetHashAndRoleByUsername got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmGet.t.Errorf("UserCacheRepositoryMock.Get got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGet.GetMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			if mm_want_ptrs.username != nil && !minimock.Equal(*mm_want_ptrs.username, mm_got.username) {
+				mmGetHashAndRoleByUsername.t.Errorf("UserCacheRepositoryMock.GetHashAndRoleByUsername got unexpected parameter username, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.originUsername, *mm_want_ptrs.username, mm_got.username, minimock.Diff(*mm_want_ptrs.username, mm_got.username))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmGet.t.Errorf("UserCacheRepositoryMock.Get got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmGet.GetMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmGetHashAndRoleByUsername.t.Errorf("UserCacheRepositoryMock.GetHashAndRoleByUsername got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
-		mm_results := mmGet.GetMock.defaultExpectation.results
+		mm_results := mmGetHashAndRoleByUsername.GetHashAndRoleByUsernameMock.defaultExpectation.results
 		if mm_results == nil {
-			mmGet.t.Fatal("No results are set for the UserCacheRepositoryMock.Get")
+			mmGetHashAndRoleByUsername.t.Fatal("No results are set for the UserCacheRepositoryMock.GetHashAndRoleByUsername")
 		}
 		return (*mm_results).up1, (*mm_results).err
 	}
-	if mmGet.funcGet != nil {
-		return mmGet.funcGet(ctx, id)
+	if mmGetHashAndRoleByUsername.funcGetHashAndRoleByUsername != nil {
+		return mmGetHashAndRoleByUsername.funcGetHashAndRoleByUsername(ctx, username)
 	}
-	mmGet.t.Fatalf("Unexpected call to UserCacheRepositoryMock.Get. %v %v", ctx, id)
+	mmGetHashAndRoleByUsername.t.Fatalf("Unexpected call to UserCacheRepositoryMock.GetHashAndRoleByUsername. %v %v", ctx, username)
 	return
 }
 
-// GetAfterCounter returns a count of finished UserCacheRepositoryMock.Get invocations
-func (mmGet *UserCacheRepositoryMock) GetAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGet.afterGetCounter)
+// GetHashAndRoleByUsernameAfterCounter returns a count of finished UserCacheRepositoryMock.GetHashAndRoleByUsername invocations
+func (mmGetHashAndRoleByUsername *UserCacheRepositoryMock) GetHashAndRoleByUsernameAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.afterGetHashAndRoleByUsernameCounter)
 }
 
-// GetBeforeCounter returns a count of UserCacheRepositoryMock.Get invocations
-func (mmGet *UserCacheRepositoryMock) GetBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmGet.beforeGetCounter)
+// GetHashAndRoleByUsernameBeforeCounter returns a count of UserCacheRepositoryMock.GetHashAndRoleByUsername invocations
+func (mmGetHashAndRoleByUsername *UserCacheRepositoryMock) GetHashAndRoleByUsernameBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetHashAndRoleByUsername.beforeGetHashAndRoleByUsernameCounter)
 }
 
-// Calls returns a list of arguments used in each call to UserCacheRepositoryMock.Get.
+// Calls returns a list of arguments used in each call to UserCacheRepositoryMock.GetHashAndRoleByUsername.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmGet *mUserCacheRepositoryMockGet) Calls() []*UserCacheRepositoryMockGetParams {
-	mmGet.mutex.RLock()
+func (mmGetHashAndRoleByUsername *mUserCacheRepositoryMockGetHashAndRoleByUsername) Calls() []*UserCacheRepositoryMockGetHashAndRoleByUsernameParams {
+	mmGetHashAndRoleByUsername.mutex.RLock()
 
-	argCopy := make([]*UserCacheRepositoryMockGetParams, len(mmGet.callArgs))
-	copy(argCopy, mmGet.callArgs)
+	argCopy := make([]*UserCacheRepositoryMockGetHashAndRoleByUsernameParams, len(mmGetHashAndRoleByUsername.callArgs))
+	copy(argCopy, mmGetHashAndRoleByUsername.callArgs)
 
-	mmGet.mutex.RUnlock()
+	mmGetHashAndRoleByUsername.mutex.RUnlock()
 
 	return argCopy
 }
 
-// MinimockGetDone returns true if the count of the Get invocations corresponds
+// MinimockGetHashAndRoleByUsernameDone returns true if the count of the GetHashAndRoleByUsername invocations corresponds
 // the number of defined expectations
-func (m *UserCacheRepositoryMock) MinimockGetDone() bool {
-	if m.GetMock.optional {
+func (m *UserCacheRepositoryMock) MinimockGetHashAndRoleByUsernameDone() bool {
+	if m.GetHashAndRoleByUsernameMock.optional {
 		// Optional methods provide '0 or more' call count restriction.
 		return true
 	}
 
-	for _, e := range m.GetMock.expectations {
+	for _, e := range m.GetHashAndRoleByUsernameMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			return false
 		}
 	}
 
-	return m.GetMock.invocationsDone()
+	return m.GetHashAndRoleByUsernameMock.invocationsDone()
 }
 
-// MinimockGetInspect logs each unmet expectation
-func (m *UserCacheRepositoryMock) MinimockGetInspect() {
-	for _, e := range m.GetMock.expectations {
+// MinimockGetHashAndRoleByUsernameInspect logs each unmet expectation
+func (m *UserCacheRepositoryMock) MinimockGetHashAndRoleByUsernameInspect() {
+	for _, e := range m.GetHashAndRoleByUsernameMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to UserCacheRepositoryMock.Get at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+			m.t.Errorf("Expected call to UserCacheRepositoryMock.GetHashAndRoleByUsername at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
 		}
 	}
 
-	afterGetCounter := mm_atomic.LoadUint64(&m.afterGetCounter)
+	afterGetHashAndRoleByUsernameCounter := mm_atomic.LoadUint64(&m.afterGetHashAndRoleByUsernameCounter)
 	// if default expectation was set then invocations count should be greater than zero
-	if m.GetMock.defaultExpectation != nil && afterGetCounter < 1 {
-		if m.GetMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to UserCacheRepositoryMock.Get at\n%s", m.GetMock.defaultExpectation.returnOrigin)
+	if m.GetHashAndRoleByUsernameMock.defaultExpectation != nil && afterGetHashAndRoleByUsernameCounter < 1 {
+		if m.GetHashAndRoleByUsernameMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to UserCacheRepositoryMock.GetHashAndRoleByUsername at\n%s", m.GetHashAndRoleByUsernameMock.defaultExpectation.returnOrigin)
 		} else {
-			m.t.Errorf("Expected call to UserCacheRepositoryMock.Get at\n%s with params: %#v", m.GetMock.defaultExpectation.expectationOrigins.origin, *m.GetMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to UserCacheRepositoryMock.GetHashAndRoleByUsername at\n%s with params: %#v", m.GetHashAndRoleByUsernameMock.defaultExpectation.expectationOrigins.origin, *m.GetHashAndRoleByUsernameMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcGet != nil && afterGetCounter < 1 {
-		m.t.Errorf("Expected call to UserCacheRepositoryMock.Get at\n%s", m.funcGetOrigin)
+	if m.funcGetHashAndRoleByUsername != nil && afterGetHashAndRoleByUsernameCounter < 1 {
+		m.t.Errorf("Expected call to UserCacheRepositoryMock.GetHashAndRoleByUsername at\n%s", m.funcGetHashAndRoleByUsernameOrigin)
 	}
 
-	if !m.GetMock.invocationsDone() && afterGetCounter > 0 {
-		m.t.Errorf("Expected %d calls to UserCacheRepositoryMock.Get at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.GetMock.expectedInvocations), m.GetMock.expectedInvocationsOrigin, afterGetCounter)
+	if !m.GetHashAndRoleByUsernameMock.invocationsDone() && afterGetHashAndRoleByUsernameCounter > 0 {
+		m.t.Errorf("Expected %d calls to UserCacheRepositoryMock.GetHashAndRoleByUsername at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetHashAndRoleByUsernameMock.expectedInvocations), m.GetHashAndRoleByUsernameMock.expectedInvocationsOrigin, afterGetHashAndRoleByUsernameCounter)
+	}
+}
+
+type mUserCacheRepositoryMockSetHashAndRole struct {
+	optional           bool
+	mock               *UserCacheRepositoryMock
+	defaultExpectation *UserCacheRepositoryMockSetHashAndRoleExpectation
+	expectations       []*UserCacheRepositoryMockSetHashAndRoleExpectation
+
+	callArgs []*UserCacheRepositoryMockSetHashAndRoleParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// UserCacheRepositoryMockSetHashAndRoleExpectation specifies expectation struct of the UserCacheRepository.SetHashAndRole
+type UserCacheRepositoryMockSetHashAndRoleExpectation struct {
+	mock               *UserCacheRepositoryMock
+	params             *UserCacheRepositoryMockSetHashAndRoleParams
+	paramPtrs          *UserCacheRepositoryMockSetHashAndRoleParamPtrs
+	expectationOrigins UserCacheRepositoryMockSetHashAndRoleExpectationOrigins
+	results            *UserCacheRepositoryMockSetHashAndRoleResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// UserCacheRepositoryMockSetHashAndRoleParams contains parameters of the UserCacheRepository.SetHashAndRole
+type UserCacheRepositoryMockSetHashAndRoleParams struct {
+	ctx      context.Context
+	username string
+	data     *model.UserAuthData
+}
+
+// UserCacheRepositoryMockSetHashAndRoleParamPtrs contains pointers to parameters of the UserCacheRepository.SetHashAndRole
+type UserCacheRepositoryMockSetHashAndRoleParamPtrs struct {
+	ctx      *context.Context
+	username *string
+	data     **model.UserAuthData
+}
+
+// UserCacheRepositoryMockSetHashAndRoleResults contains results of the UserCacheRepository.SetHashAndRole
+type UserCacheRepositoryMockSetHashAndRoleResults struct {
+	err error
+}
+
+// UserCacheRepositoryMockSetHashAndRoleOrigins contains origins of expectations of the UserCacheRepository.SetHashAndRole
+type UserCacheRepositoryMockSetHashAndRoleExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originUsername string
+	originData     string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Optional() *mUserCacheRepositoryMockSetHashAndRole {
+	mmSetHashAndRole.optional = true
+	return mmSetHashAndRole
+}
+
+// Expect sets up expected params for UserCacheRepository.SetHashAndRole
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Expect(ctx context.Context, username string, data *model.UserAuthData) *mUserCacheRepositoryMockSetHashAndRole {
+	if mmSetHashAndRole.mock.funcSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Set")
+	}
+
+	if mmSetHashAndRole.defaultExpectation == nil {
+		mmSetHashAndRole.defaultExpectation = &UserCacheRepositoryMockSetHashAndRoleExpectation{}
+	}
+
+	if mmSetHashAndRole.defaultExpectation.paramPtrs != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by ExpectParams functions")
+	}
+
+	mmSetHashAndRole.defaultExpectation.params = &UserCacheRepositoryMockSetHashAndRoleParams{ctx, username, data}
+	mmSetHashAndRole.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmSetHashAndRole.expectations {
+		if minimock.Equal(e.params, mmSetHashAndRole.defaultExpectation.params) {
+			mmSetHashAndRole.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmSetHashAndRole.defaultExpectation.params)
+		}
+	}
+
+	return mmSetHashAndRole
+}
+
+// ExpectCtxParam1 sets up expected param ctx for UserCacheRepository.SetHashAndRole
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) ExpectCtxParam1(ctx context.Context) *mUserCacheRepositoryMockSetHashAndRole {
+	if mmSetHashAndRole.mock.funcSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Set")
+	}
+
+	if mmSetHashAndRole.defaultExpectation == nil {
+		mmSetHashAndRole.defaultExpectation = &UserCacheRepositoryMockSetHashAndRoleExpectation{}
+	}
+
+	if mmSetHashAndRole.defaultExpectation.params != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Expect")
+	}
+
+	if mmSetHashAndRole.defaultExpectation.paramPtrs == nil {
+		mmSetHashAndRole.defaultExpectation.paramPtrs = &UserCacheRepositoryMockSetHashAndRoleParamPtrs{}
+	}
+	mmSetHashAndRole.defaultExpectation.paramPtrs.ctx = &ctx
+	mmSetHashAndRole.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmSetHashAndRole
+}
+
+// ExpectUsernameParam2 sets up expected param username for UserCacheRepository.SetHashAndRole
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) ExpectUsernameParam2(username string) *mUserCacheRepositoryMockSetHashAndRole {
+	if mmSetHashAndRole.mock.funcSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Set")
+	}
+
+	if mmSetHashAndRole.defaultExpectation == nil {
+		mmSetHashAndRole.defaultExpectation = &UserCacheRepositoryMockSetHashAndRoleExpectation{}
+	}
+
+	if mmSetHashAndRole.defaultExpectation.params != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Expect")
+	}
+
+	if mmSetHashAndRole.defaultExpectation.paramPtrs == nil {
+		mmSetHashAndRole.defaultExpectation.paramPtrs = &UserCacheRepositoryMockSetHashAndRoleParamPtrs{}
+	}
+	mmSetHashAndRole.defaultExpectation.paramPtrs.username = &username
+	mmSetHashAndRole.defaultExpectation.expectationOrigins.originUsername = minimock.CallerInfo(1)
+
+	return mmSetHashAndRole
+}
+
+// ExpectDataParam3 sets up expected param data for UserCacheRepository.SetHashAndRole
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) ExpectDataParam3(data *model.UserAuthData) *mUserCacheRepositoryMockSetHashAndRole {
+	if mmSetHashAndRole.mock.funcSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Set")
+	}
+
+	if mmSetHashAndRole.defaultExpectation == nil {
+		mmSetHashAndRole.defaultExpectation = &UserCacheRepositoryMockSetHashAndRoleExpectation{}
+	}
+
+	if mmSetHashAndRole.defaultExpectation.params != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Expect")
+	}
+
+	if mmSetHashAndRole.defaultExpectation.paramPtrs == nil {
+		mmSetHashAndRole.defaultExpectation.paramPtrs = &UserCacheRepositoryMockSetHashAndRoleParamPtrs{}
+	}
+	mmSetHashAndRole.defaultExpectation.paramPtrs.data = &data
+	mmSetHashAndRole.defaultExpectation.expectationOrigins.originData = minimock.CallerInfo(1)
+
+	return mmSetHashAndRole
+}
+
+// Inspect accepts an inspector function that has same arguments as the UserCacheRepository.SetHashAndRole
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Inspect(f func(ctx context.Context, username string, data *model.UserAuthData)) *mUserCacheRepositoryMockSetHashAndRole {
+	if mmSetHashAndRole.mock.inspectFuncSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("Inspect function is already set for UserCacheRepositoryMock.SetHashAndRole")
+	}
+
+	mmSetHashAndRole.mock.inspectFuncSetHashAndRole = f
+
+	return mmSetHashAndRole
+}
+
+// Return sets up results that will be returned by UserCacheRepository.SetHashAndRole
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Return(err error) *UserCacheRepositoryMock {
+	if mmSetHashAndRole.mock.funcSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Set")
+	}
+
+	if mmSetHashAndRole.defaultExpectation == nil {
+		mmSetHashAndRole.defaultExpectation = &UserCacheRepositoryMockSetHashAndRoleExpectation{mock: mmSetHashAndRole.mock}
+	}
+	mmSetHashAndRole.defaultExpectation.results = &UserCacheRepositoryMockSetHashAndRoleResults{err}
+	mmSetHashAndRole.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmSetHashAndRole.mock
+}
+
+// Set uses given function f to mock the UserCacheRepository.SetHashAndRole method
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Set(f func(ctx context.Context, username string, data *model.UserAuthData) (err error)) *UserCacheRepositoryMock {
+	if mmSetHashAndRole.defaultExpectation != nil {
+		mmSetHashAndRole.mock.t.Fatalf("Default expectation is already set for the UserCacheRepository.SetHashAndRole method")
+	}
+
+	if len(mmSetHashAndRole.expectations) > 0 {
+		mmSetHashAndRole.mock.t.Fatalf("Some expectations are already set for the UserCacheRepository.SetHashAndRole method")
+	}
+
+	mmSetHashAndRole.mock.funcSetHashAndRole = f
+	mmSetHashAndRole.mock.funcSetHashAndRoleOrigin = minimock.CallerInfo(1)
+	return mmSetHashAndRole.mock
+}
+
+// When sets expectation for the UserCacheRepository.SetHashAndRole which will trigger the result defined by the following
+// Then helper
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) When(ctx context.Context, username string, data *model.UserAuthData) *UserCacheRepositoryMockSetHashAndRoleExpectation {
+	if mmSetHashAndRole.mock.funcSetHashAndRole != nil {
+		mmSetHashAndRole.mock.t.Fatalf("UserCacheRepositoryMock.SetHashAndRole mock is already set by Set")
+	}
+
+	expectation := &UserCacheRepositoryMockSetHashAndRoleExpectation{
+		mock:               mmSetHashAndRole.mock,
+		params:             &UserCacheRepositoryMockSetHashAndRoleParams{ctx, username, data},
+		expectationOrigins: UserCacheRepositoryMockSetHashAndRoleExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmSetHashAndRole.expectations = append(mmSetHashAndRole.expectations, expectation)
+	return expectation
+}
+
+// Then sets up UserCacheRepository.SetHashAndRole return parameters for the expectation previously defined by the When method
+func (e *UserCacheRepositoryMockSetHashAndRoleExpectation) Then(err error) *UserCacheRepositoryMock {
+	e.results = &UserCacheRepositoryMockSetHashAndRoleResults{err}
+	return e.mock
+}
+
+// Times sets number of times UserCacheRepository.SetHashAndRole should be invoked
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Times(n uint64) *mUserCacheRepositoryMockSetHashAndRole {
+	if n == 0 {
+		mmSetHashAndRole.mock.t.Fatalf("Times of UserCacheRepositoryMock.SetHashAndRole mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmSetHashAndRole.expectedInvocations, n)
+	mmSetHashAndRole.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmSetHashAndRole
+}
+
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) invocationsDone() bool {
+	if len(mmSetHashAndRole.expectations) == 0 && mmSetHashAndRole.defaultExpectation == nil && mmSetHashAndRole.mock.funcSetHashAndRole == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmSetHashAndRole.mock.afterSetHashAndRoleCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmSetHashAndRole.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// SetHashAndRole implements mm_repository.UserCacheRepository
+func (mmSetHashAndRole *UserCacheRepositoryMock) SetHashAndRole(ctx context.Context, username string, data *model.UserAuthData) (err error) {
+	mm_atomic.AddUint64(&mmSetHashAndRole.beforeSetHashAndRoleCounter, 1)
+	defer mm_atomic.AddUint64(&mmSetHashAndRole.afterSetHashAndRoleCounter, 1)
+
+	mmSetHashAndRole.t.Helper()
+
+	if mmSetHashAndRole.inspectFuncSetHashAndRole != nil {
+		mmSetHashAndRole.inspectFuncSetHashAndRole(ctx, username, data)
+	}
+
+	mm_params := UserCacheRepositoryMockSetHashAndRoleParams{ctx, username, data}
+
+	// Record call args
+	mmSetHashAndRole.SetHashAndRoleMock.mutex.Lock()
+	mmSetHashAndRole.SetHashAndRoleMock.callArgs = append(mmSetHashAndRole.SetHashAndRoleMock.callArgs, &mm_params)
+	mmSetHashAndRole.SetHashAndRoleMock.mutex.Unlock()
+
+	for _, e := range mmSetHashAndRole.SetHashAndRoleMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.Counter, 1)
+		mm_want := mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.params
+		mm_want_ptrs := mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.paramPtrs
+
+		mm_got := UserCacheRepositoryMockSetHashAndRoleParams{ctx, username, data}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmSetHashAndRole.t.Errorf("UserCacheRepositoryMock.SetHashAndRole got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.username != nil && !minimock.Equal(*mm_want_ptrs.username, mm_got.username) {
+				mmSetHashAndRole.t.Errorf("UserCacheRepositoryMock.SetHashAndRole got unexpected parameter username, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.expectationOrigins.originUsername, *mm_want_ptrs.username, mm_got.username, minimock.Diff(*mm_want_ptrs.username, mm_got.username))
+			}
+
+			if mm_want_ptrs.data != nil && !minimock.Equal(*mm_want_ptrs.data, mm_got.data) {
+				mmSetHashAndRole.t.Errorf("UserCacheRepositoryMock.SetHashAndRole got unexpected parameter data, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.expectationOrigins.originData, *mm_want_ptrs.data, mm_got.data, minimock.Diff(*mm_want_ptrs.data, mm_got.data))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmSetHashAndRole.t.Errorf("UserCacheRepositoryMock.SetHashAndRole got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmSetHashAndRole.SetHashAndRoleMock.defaultExpectation.results
+		if mm_results == nil {
+			mmSetHashAndRole.t.Fatal("No results are set for the UserCacheRepositoryMock.SetHashAndRole")
+		}
+		return (*mm_results).err
+	}
+	if mmSetHashAndRole.funcSetHashAndRole != nil {
+		return mmSetHashAndRole.funcSetHashAndRole(ctx, username, data)
+	}
+	mmSetHashAndRole.t.Fatalf("Unexpected call to UserCacheRepositoryMock.SetHashAndRole. %v %v %v", ctx, username, data)
+	return
+}
+
+// SetHashAndRoleAfterCounter returns a count of finished UserCacheRepositoryMock.SetHashAndRole invocations
+func (mmSetHashAndRole *UserCacheRepositoryMock) SetHashAndRoleAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmSetHashAndRole.afterSetHashAndRoleCounter)
+}
+
+// SetHashAndRoleBeforeCounter returns a count of UserCacheRepositoryMock.SetHashAndRole invocations
+func (mmSetHashAndRole *UserCacheRepositoryMock) SetHashAndRoleBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmSetHashAndRole.beforeSetHashAndRoleCounter)
+}
+
+// Calls returns a list of arguments used in each call to UserCacheRepositoryMock.SetHashAndRole.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmSetHashAndRole *mUserCacheRepositoryMockSetHashAndRole) Calls() []*UserCacheRepositoryMockSetHashAndRoleParams {
+	mmSetHashAndRole.mutex.RLock()
+
+	argCopy := make([]*UserCacheRepositoryMockSetHashAndRoleParams, len(mmSetHashAndRole.callArgs))
+	copy(argCopy, mmSetHashAndRole.callArgs)
+
+	mmSetHashAndRole.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockSetHashAndRoleDone returns true if the count of the SetHashAndRole invocations corresponds
+// the number of defined expectations
+func (m *UserCacheRepositoryMock) MinimockSetHashAndRoleDone() bool {
+	if m.SetHashAndRoleMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.SetHashAndRoleMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.SetHashAndRoleMock.invocationsDone()
+}
+
+// MinimockSetHashAndRoleInspect logs each unmet expectation
+func (m *UserCacheRepositoryMock) MinimockSetHashAndRoleInspect() {
+	for _, e := range m.SetHashAndRoleMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to UserCacheRepositoryMock.SetHashAndRole at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterSetHashAndRoleCounter := mm_atomic.LoadUint64(&m.afterSetHashAndRoleCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.SetHashAndRoleMock.defaultExpectation != nil && afterSetHashAndRoleCounter < 1 {
+		if m.SetHashAndRoleMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to UserCacheRepositoryMock.SetHashAndRole at\n%s", m.SetHashAndRoleMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to UserCacheRepositoryMock.SetHashAndRole at\n%s with params: %#v", m.SetHashAndRoleMock.defaultExpectation.expectationOrigins.origin, *m.SetHashAndRoleMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcSetHashAndRole != nil && afterSetHashAndRoleCounter < 1 {
+		m.t.Errorf("Expected call to UserCacheRepositoryMock.SetHashAndRole at\n%s", m.funcSetHashAndRoleOrigin)
+	}
+
+	if !m.SetHashAndRoleMock.invocationsDone() && afterSetHashAndRoleCounter > 0 {
+		m.t.Errorf("Expected %d calls to UserCacheRepositoryMock.SetHashAndRole at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.SetHashAndRoleMock.expectedInvocations), m.SetHashAndRoleMock.expectedInvocationsOrigin, afterSetHashAndRoleCounter)
 	}
 }
 
@@ -774,9 +773,9 @@ func (m *UserCacheRepositoryMock) MinimockGetInspect() {
 func (m *UserCacheRepositoryMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
 		if !m.minimockDone() {
-			m.MinimockCreateInspect()
+			m.MinimockGetHashAndRoleByUsernameInspect()
 
-			m.MinimockGetInspect()
+			m.MinimockSetHashAndRoleInspect()
 		}
 	})
 }
@@ -800,6 +799,6 @@ func (m *UserCacheRepositoryMock) MinimockWait(timeout mm_time.Duration) {
 func (m *UserCacheRepositoryMock) minimockDone() bool {
 	done := true
 	return done &&
-		m.MinimockCreateDone() &&
-		m.MinimockGetDone()
+		m.MinimockGetHashAndRoleByUsernameDone() &&
+		m.MinimockSetHashAndRoleDone()
 }

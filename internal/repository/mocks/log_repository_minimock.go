@@ -19,12 +19,19 @@ type LogRepositoryMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcCreate          func(ctx context.Context, logEntry *model.LogEntry) (err error)
-	funcCreateOrigin    string
-	inspectFuncCreate   func(ctx context.Context, logEntry *model.LogEntry)
-	afterCreateCounter  uint64
-	beforeCreateCounter uint64
-	CreateMock          mLogRepositoryMockCreate
+	funcCreateLogAuth          func(ctx context.Context, logEntry *model.LogEntryAuth) (err error)
+	funcCreateLogAuthOrigin    string
+	inspectFuncCreateLogAuth   func(ctx context.Context, logEntry *model.LogEntryAuth)
+	afterCreateLogAuthCounter  uint64
+	beforeCreateLogAuthCounter uint64
+	CreateLogAuthMock          mLogRepositoryMockCreateLogAuth
+
+	funcCreateLogUser          func(ctx context.Context, logEntry *model.LogEntryUser) (err error)
+	funcCreateLogUserOrigin    string
+	inspectFuncCreateLogUser   func(ctx context.Context, logEntry *model.LogEntryUser)
+	afterCreateLogUserCounter  uint64
+	beforeCreateLogUserCounter uint64
+	CreateLogUserMock          mLogRepositoryMockCreateLogUser
 }
 
 // NewLogRepositoryMock returns a mock for mm_repository.LogRepository
@@ -35,57 +42,60 @@ func NewLogRepositoryMock(t minimock.Tester) *LogRepositoryMock {
 		controller.RegisterMocker(m)
 	}
 
-	m.CreateMock = mLogRepositoryMockCreate{mock: m}
-	m.CreateMock.callArgs = []*LogRepositoryMockCreateParams{}
+	m.CreateLogAuthMock = mLogRepositoryMockCreateLogAuth{mock: m}
+	m.CreateLogAuthMock.callArgs = []*LogRepositoryMockCreateLogAuthParams{}
+
+	m.CreateLogUserMock = mLogRepositoryMockCreateLogUser{mock: m}
+	m.CreateLogUserMock.callArgs = []*LogRepositoryMockCreateLogUserParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
 	return m
 }
 
-type mLogRepositoryMockCreate struct {
+type mLogRepositoryMockCreateLogAuth struct {
 	optional           bool
 	mock               *LogRepositoryMock
-	defaultExpectation *LogRepositoryMockCreateExpectation
-	expectations       []*LogRepositoryMockCreateExpectation
+	defaultExpectation *LogRepositoryMockCreateLogAuthExpectation
+	expectations       []*LogRepositoryMockCreateLogAuthExpectation
 
-	callArgs []*LogRepositoryMockCreateParams
+	callArgs []*LogRepositoryMockCreateLogAuthParams
 	mutex    sync.RWMutex
 
 	expectedInvocations       uint64
 	expectedInvocationsOrigin string
 }
 
-// LogRepositoryMockCreateExpectation specifies expectation struct of the LogRepository.Create
-type LogRepositoryMockCreateExpectation struct {
+// LogRepositoryMockCreateLogAuthExpectation specifies expectation struct of the LogRepository.CreateLogAuth
+type LogRepositoryMockCreateLogAuthExpectation struct {
 	mock               *LogRepositoryMock
-	params             *LogRepositoryMockCreateParams
-	paramPtrs          *LogRepositoryMockCreateParamPtrs
-	expectationOrigins LogRepositoryMockCreateExpectationOrigins
-	results            *LogRepositoryMockCreateResults
+	params             *LogRepositoryMockCreateLogAuthParams
+	paramPtrs          *LogRepositoryMockCreateLogAuthParamPtrs
+	expectationOrigins LogRepositoryMockCreateLogAuthExpectationOrigins
+	results            *LogRepositoryMockCreateLogAuthResults
 	returnOrigin       string
 	Counter            uint64
 }
 
-// LogRepositoryMockCreateParams contains parameters of the LogRepository.Create
-type LogRepositoryMockCreateParams struct {
+// LogRepositoryMockCreateLogAuthParams contains parameters of the LogRepository.CreateLogAuth
+type LogRepositoryMockCreateLogAuthParams struct {
 	ctx      context.Context
-	logEntry *model.LogEntry
+	logEntry *model.LogEntryAuth
 }
 
-// LogRepositoryMockCreateParamPtrs contains pointers to parameters of the LogRepository.Create
-type LogRepositoryMockCreateParamPtrs struct {
+// LogRepositoryMockCreateLogAuthParamPtrs contains pointers to parameters of the LogRepository.CreateLogAuth
+type LogRepositoryMockCreateLogAuthParamPtrs struct {
 	ctx      *context.Context
-	logEntry **model.LogEntry
+	logEntry **model.LogEntryAuth
 }
 
-// LogRepositoryMockCreateResults contains results of the LogRepository.Create
-type LogRepositoryMockCreateResults struct {
+// LogRepositoryMockCreateLogAuthResults contains results of the LogRepository.CreateLogAuth
+type LogRepositoryMockCreateLogAuthResults struct {
 	err error
 }
 
-// LogRepositoryMockCreateOrigins contains origins of expectations of the LogRepository.Create
-type LogRepositoryMockCreateExpectationOrigins struct {
+// LogRepositoryMockCreateLogAuthOrigins contains origins of expectations of the LogRepository.CreateLogAuth
+type LogRepositoryMockCreateLogAuthExpectationOrigins struct {
 	origin         string
 	originCtx      string
 	originLogEntry string
@@ -96,292 +106,634 @@ type LogRepositoryMockCreateExpectationOrigins struct {
 // Optional() makes method check to work in '0 or more' mode.
 // It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
 // catch the problems when the expected method call is totally skipped during test run.
-func (mmCreate *mLogRepositoryMockCreate) Optional() *mLogRepositoryMockCreate {
-	mmCreate.optional = true
-	return mmCreate
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Optional() *mLogRepositoryMockCreateLogAuth {
+	mmCreateLogAuth.optional = true
+	return mmCreateLogAuth
 }
 
-// Expect sets up expected params for LogRepository.Create
-func (mmCreate *mLogRepositoryMockCreate) Expect(ctx context.Context, logEntry *model.LogEntry) *mLogRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Set")
+// Expect sets up expected params for LogRepository.CreateLogAuth
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Expect(ctx context.Context, logEntry *model.LogEntryAuth) *mLogRepositoryMockCreateLogAuth {
+	if mmCreateLogAuth.mock.funcCreateLogAuth != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &LogRepositoryMockCreateExpectation{}
+	if mmCreateLogAuth.defaultExpectation == nil {
+		mmCreateLogAuth.defaultExpectation = &LogRepositoryMockCreateLogAuthExpectation{}
 	}
 
-	if mmCreate.defaultExpectation.paramPtrs != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by ExpectParams functions")
+	if mmCreateLogAuth.defaultExpectation.paramPtrs != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by ExpectParams functions")
 	}
 
-	mmCreate.defaultExpectation.params = &LogRepositoryMockCreateParams{ctx, logEntry}
-	mmCreate.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
-	for _, e := range mmCreate.expectations {
-		if minimock.Equal(e.params, mmCreate.defaultExpectation.params) {
-			mmCreate.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreate.defaultExpectation.params)
+	mmCreateLogAuth.defaultExpectation.params = &LogRepositoryMockCreateLogAuthParams{ctx, logEntry}
+	mmCreateLogAuth.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreateLogAuth.expectations {
+		if minimock.Equal(e.params, mmCreateLogAuth.defaultExpectation.params) {
+			mmCreateLogAuth.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateLogAuth.defaultExpectation.params)
 		}
 	}
 
-	return mmCreate
+	return mmCreateLogAuth
 }
 
-// ExpectCtxParam1 sets up expected param ctx for LogRepository.Create
-func (mmCreate *mLogRepositoryMockCreate) ExpectCtxParam1(ctx context.Context) *mLogRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Set")
+// ExpectCtxParam1 sets up expected param ctx for LogRepository.CreateLogAuth
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) ExpectCtxParam1(ctx context.Context) *mLogRepositoryMockCreateLogAuth {
+	if mmCreateLogAuth.mock.funcCreateLogAuth != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &LogRepositoryMockCreateExpectation{}
+	if mmCreateLogAuth.defaultExpectation == nil {
+		mmCreateLogAuth.defaultExpectation = &LogRepositoryMockCreateLogAuthExpectation{}
 	}
 
-	if mmCreate.defaultExpectation.params != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Expect")
+	if mmCreateLogAuth.defaultExpectation.params != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Expect")
 	}
 
-	if mmCreate.defaultExpectation.paramPtrs == nil {
-		mmCreate.defaultExpectation.paramPtrs = &LogRepositoryMockCreateParamPtrs{}
+	if mmCreateLogAuth.defaultExpectation.paramPtrs == nil {
+		mmCreateLogAuth.defaultExpectation.paramPtrs = &LogRepositoryMockCreateLogAuthParamPtrs{}
 	}
-	mmCreate.defaultExpectation.paramPtrs.ctx = &ctx
-	mmCreate.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+	mmCreateLogAuth.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreateLogAuth.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
 
-	return mmCreate
+	return mmCreateLogAuth
 }
 
-// ExpectLogEntryParam2 sets up expected param logEntry for LogRepository.Create
-func (mmCreate *mLogRepositoryMockCreate) ExpectLogEntryParam2(logEntry *model.LogEntry) *mLogRepositoryMockCreate {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Set")
+// ExpectLogEntryParam2 sets up expected param logEntry for LogRepository.CreateLogAuth
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) ExpectLogEntryParam2(logEntry *model.LogEntryAuth) *mLogRepositoryMockCreateLogAuth {
+	if mmCreateLogAuth.mock.funcCreateLogAuth != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &LogRepositoryMockCreateExpectation{}
+	if mmCreateLogAuth.defaultExpectation == nil {
+		mmCreateLogAuth.defaultExpectation = &LogRepositoryMockCreateLogAuthExpectation{}
 	}
 
-	if mmCreate.defaultExpectation.params != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Expect")
+	if mmCreateLogAuth.defaultExpectation.params != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Expect")
 	}
 
-	if mmCreate.defaultExpectation.paramPtrs == nil {
-		mmCreate.defaultExpectation.paramPtrs = &LogRepositoryMockCreateParamPtrs{}
+	if mmCreateLogAuth.defaultExpectation.paramPtrs == nil {
+		mmCreateLogAuth.defaultExpectation.paramPtrs = &LogRepositoryMockCreateLogAuthParamPtrs{}
 	}
-	mmCreate.defaultExpectation.paramPtrs.logEntry = &logEntry
-	mmCreate.defaultExpectation.expectationOrigins.originLogEntry = minimock.CallerInfo(1)
+	mmCreateLogAuth.defaultExpectation.paramPtrs.logEntry = &logEntry
+	mmCreateLogAuth.defaultExpectation.expectationOrigins.originLogEntry = minimock.CallerInfo(1)
 
-	return mmCreate
+	return mmCreateLogAuth
 }
 
-// Inspect accepts an inspector function that has same arguments as the LogRepository.Create
-func (mmCreate *mLogRepositoryMockCreate) Inspect(f func(ctx context.Context, logEntry *model.LogEntry)) *mLogRepositoryMockCreate {
-	if mmCreate.mock.inspectFuncCreate != nil {
-		mmCreate.mock.t.Fatalf("Inspect function is already set for LogRepositoryMock.Create")
+// Inspect accepts an inspector function that has same arguments as the LogRepository.CreateLogAuth
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Inspect(f func(ctx context.Context, logEntry *model.LogEntryAuth)) *mLogRepositoryMockCreateLogAuth {
+	if mmCreateLogAuth.mock.inspectFuncCreateLogAuth != nil {
+		mmCreateLogAuth.mock.t.Fatalf("Inspect function is already set for LogRepositoryMock.CreateLogAuth")
 	}
 
-	mmCreate.mock.inspectFuncCreate = f
+	mmCreateLogAuth.mock.inspectFuncCreateLogAuth = f
 
-	return mmCreate
+	return mmCreateLogAuth
 }
 
-// Return sets up results that will be returned by LogRepository.Create
-func (mmCreate *mLogRepositoryMockCreate) Return(err error) *LogRepositoryMock {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Set")
+// Return sets up results that will be returned by LogRepository.CreateLogAuth
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Return(err error) *LogRepositoryMock {
+	if mmCreateLogAuth.mock.funcCreateLogAuth != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Set")
 	}
 
-	if mmCreate.defaultExpectation == nil {
-		mmCreate.defaultExpectation = &LogRepositoryMockCreateExpectation{mock: mmCreate.mock}
+	if mmCreateLogAuth.defaultExpectation == nil {
+		mmCreateLogAuth.defaultExpectation = &LogRepositoryMockCreateLogAuthExpectation{mock: mmCreateLogAuth.mock}
 	}
-	mmCreate.defaultExpectation.results = &LogRepositoryMockCreateResults{err}
-	mmCreate.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
-	return mmCreate.mock
+	mmCreateLogAuth.defaultExpectation.results = &LogRepositoryMockCreateLogAuthResults{err}
+	mmCreateLogAuth.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreateLogAuth.mock
 }
 
-// Set uses given function f to mock the LogRepository.Create method
-func (mmCreate *mLogRepositoryMockCreate) Set(f func(ctx context.Context, logEntry *model.LogEntry) (err error)) *LogRepositoryMock {
-	if mmCreate.defaultExpectation != nil {
-		mmCreate.mock.t.Fatalf("Default expectation is already set for the LogRepository.Create method")
+// Set uses given function f to mock the LogRepository.CreateLogAuth method
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Set(f func(ctx context.Context, logEntry *model.LogEntryAuth) (err error)) *LogRepositoryMock {
+	if mmCreateLogAuth.defaultExpectation != nil {
+		mmCreateLogAuth.mock.t.Fatalf("Default expectation is already set for the LogRepository.CreateLogAuth method")
 	}
 
-	if len(mmCreate.expectations) > 0 {
-		mmCreate.mock.t.Fatalf("Some expectations are already set for the LogRepository.Create method")
+	if len(mmCreateLogAuth.expectations) > 0 {
+		mmCreateLogAuth.mock.t.Fatalf("Some expectations are already set for the LogRepository.CreateLogAuth method")
 	}
 
-	mmCreate.mock.funcCreate = f
-	mmCreate.mock.funcCreateOrigin = minimock.CallerInfo(1)
-	return mmCreate.mock
+	mmCreateLogAuth.mock.funcCreateLogAuth = f
+	mmCreateLogAuth.mock.funcCreateLogAuthOrigin = minimock.CallerInfo(1)
+	return mmCreateLogAuth.mock
 }
 
-// When sets expectation for the LogRepository.Create which will trigger the result defined by the following
+// When sets expectation for the LogRepository.CreateLogAuth which will trigger the result defined by the following
 // Then helper
-func (mmCreate *mLogRepositoryMockCreate) When(ctx context.Context, logEntry *model.LogEntry) *LogRepositoryMockCreateExpectation {
-	if mmCreate.mock.funcCreate != nil {
-		mmCreate.mock.t.Fatalf("LogRepositoryMock.Create mock is already set by Set")
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) When(ctx context.Context, logEntry *model.LogEntryAuth) *LogRepositoryMockCreateLogAuthExpectation {
+	if mmCreateLogAuth.mock.funcCreateLogAuth != nil {
+		mmCreateLogAuth.mock.t.Fatalf("LogRepositoryMock.CreateLogAuth mock is already set by Set")
 	}
 
-	expectation := &LogRepositoryMockCreateExpectation{
-		mock:               mmCreate.mock,
-		params:             &LogRepositoryMockCreateParams{ctx, logEntry},
-		expectationOrigins: LogRepositoryMockCreateExpectationOrigins{origin: minimock.CallerInfo(1)},
+	expectation := &LogRepositoryMockCreateLogAuthExpectation{
+		mock:               mmCreateLogAuth.mock,
+		params:             &LogRepositoryMockCreateLogAuthParams{ctx, logEntry},
+		expectationOrigins: LogRepositoryMockCreateLogAuthExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
-	mmCreate.expectations = append(mmCreate.expectations, expectation)
+	mmCreateLogAuth.expectations = append(mmCreateLogAuth.expectations, expectation)
 	return expectation
 }
 
-// Then sets up LogRepository.Create return parameters for the expectation previously defined by the When method
-func (e *LogRepositoryMockCreateExpectation) Then(err error) *LogRepositoryMock {
-	e.results = &LogRepositoryMockCreateResults{err}
+// Then sets up LogRepository.CreateLogAuth return parameters for the expectation previously defined by the When method
+func (e *LogRepositoryMockCreateLogAuthExpectation) Then(err error) *LogRepositoryMock {
+	e.results = &LogRepositoryMockCreateLogAuthResults{err}
 	return e.mock
 }
 
-// Times sets number of times LogRepository.Create should be invoked
-func (mmCreate *mLogRepositoryMockCreate) Times(n uint64) *mLogRepositoryMockCreate {
+// Times sets number of times LogRepository.CreateLogAuth should be invoked
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Times(n uint64) *mLogRepositoryMockCreateLogAuth {
 	if n == 0 {
-		mmCreate.mock.t.Fatalf("Times of LogRepositoryMock.Create mock can not be zero")
+		mmCreateLogAuth.mock.t.Fatalf("Times of LogRepositoryMock.CreateLogAuth mock can not be zero")
 	}
-	mm_atomic.StoreUint64(&mmCreate.expectedInvocations, n)
-	mmCreate.expectedInvocationsOrigin = minimock.CallerInfo(1)
-	return mmCreate
+	mm_atomic.StoreUint64(&mmCreateLogAuth.expectedInvocations, n)
+	mmCreateLogAuth.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreateLogAuth
 }
 
-func (mmCreate *mLogRepositoryMockCreate) invocationsDone() bool {
-	if len(mmCreate.expectations) == 0 && mmCreate.defaultExpectation == nil && mmCreate.mock.funcCreate == nil {
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) invocationsDone() bool {
+	if len(mmCreateLogAuth.expectations) == 0 && mmCreateLogAuth.defaultExpectation == nil && mmCreateLogAuth.mock.funcCreateLogAuth == nil {
 		return true
 	}
 
-	totalInvocations := mm_atomic.LoadUint64(&mmCreate.mock.afterCreateCounter)
-	expectedInvocations := mm_atomic.LoadUint64(&mmCreate.expectedInvocations)
+	totalInvocations := mm_atomic.LoadUint64(&mmCreateLogAuth.mock.afterCreateLogAuthCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreateLogAuth.expectedInvocations)
 
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// Create implements mm_repository.LogRepository
-func (mmCreate *LogRepositoryMock) Create(ctx context.Context, logEntry *model.LogEntry) (err error) {
-	mm_atomic.AddUint64(&mmCreate.beforeCreateCounter, 1)
-	defer mm_atomic.AddUint64(&mmCreate.afterCreateCounter, 1)
+// CreateLogAuth implements mm_repository.LogRepository
+func (mmCreateLogAuth *LogRepositoryMock) CreateLogAuth(ctx context.Context, logEntry *model.LogEntryAuth) (err error) {
+	mm_atomic.AddUint64(&mmCreateLogAuth.beforeCreateLogAuthCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreateLogAuth.afterCreateLogAuthCounter, 1)
 
-	mmCreate.t.Helper()
+	mmCreateLogAuth.t.Helper()
 
-	if mmCreate.inspectFuncCreate != nil {
-		mmCreate.inspectFuncCreate(ctx, logEntry)
+	if mmCreateLogAuth.inspectFuncCreateLogAuth != nil {
+		mmCreateLogAuth.inspectFuncCreateLogAuth(ctx, logEntry)
 	}
 
-	mm_params := LogRepositoryMockCreateParams{ctx, logEntry}
+	mm_params := LogRepositoryMockCreateLogAuthParams{ctx, logEntry}
 
 	// Record call args
-	mmCreate.CreateMock.mutex.Lock()
-	mmCreate.CreateMock.callArgs = append(mmCreate.CreateMock.callArgs, &mm_params)
-	mmCreate.CreateMock.mutex.Unlock()
+	mmCreateLogAuth.CreateLogAuthMock.mutex.Lock()
+	mmCreateLogAuth.CreateLogAuthMock.callArgs = append(mmCreateLogAuth.CreateLogAuthMock.callArgs, &mm_params)
+	mmCreateLogAuth.CreateLogAuthMock.mutex.Unlock()
 
-	for _, e := range mmCreate.CreateMock.expectations {
+	for _, e := range mmCreateLogAuth.CreateLogAuthMock.expectations {
 		if minimock.Equal(*e.params, mm_params) {
 			mm_atomic.AddUint64(&e.Counter, 1)
 			return e.results.err
 		}
 	}
 
-	if mmCreate.CreateMock.defaultExpectation != nil {
-		mm_atomic.AddUint64(&mmCreate.CreateMock.defaultExpectation.Counter, 1)
-		mm_want := mmCreate.CreateMock.defaultExpectation.params
-		mm_want_ptrs := mmCreate.CreateMock.defaultExpectation.paramPtrs
+	if mmCreateLogAuth.CreateLogAuthMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.params
+		mm_want_ptrs := mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.paramPtrs
 
-		mm_got := LogRepositoryMockCreateParams{ctx, logEntry}
+		mm_got := LogRepositoryMockCreateLogAuthParams{ctx, logEntry}
 
 		if mm_want_ptrs != nil {
 
 			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
-				mmCreate.t.Errorf("LogRepositoryMock.Create got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreate.CreateMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+				mmCreateLogAuth.t.Errorf("LogRepositoryMock.CreateLogAuth got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
 			if mm_want_ptrs.logEntry != nil && !minimock.Equal(*mm_want_ptrs.logEntry, mm_got.logEntry) {
-				mmCreate.t.Errorf("LogRepositoryMock.Create got unexpected parameter logEntry, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmCreate.CreateMock.defaultExpectation.expectationOrigins.originLogEntry, *mm_want_ptrs.logEntry, mm_got.logEntry, minimock.Diff(*mm_want_ptrs.logEntry, mm_got.logEntry))
+				mmCreateLogAuth.t.Errorf("LogRepositoryMock.CreateLogAuth got unexpected parameter logEntry, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.expectationOrigins.originLogEntry, *mm_want_ptrs.logEntry, mm_got.logEntry, minimock.Diff(*mm_want_ptrs.logEntry, mm_got.logEntry))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
-			mmCreate.t.Errorf("LogRepositoryMock.Create got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-				mmCreate.CreateMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+			mmCreateLogAuth.t.Errorf("LogRepositoryMock.CreateLogAuth got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
 		}
 
-		mm_results := mmCreate.CreateMock.defaultExpectation.results
+		mm_results := mmCreateLogAuth.CreateLogAuthMock.defaultExpectation.results
 		if mm_results == nil {
-			mmCreate.t.Fatal("No results are set for the LogRepositoryMock.Create")
+			mmCreateLogAuth.t.Fatal("No results are set for the LogRepositoryMock.CreateLogAuth")
 		}
 		return (*mm_results).err
 	}
-	if mmCreate.funcCreate != nil {
-		return mmCreate.funcCreate(ctx, logEntry)
+	if mmCreateLogAuth.funcCreateLogAuth != nil {
+		return mmCreateLogAuth.funcCreateLogAuth(ctx, logEntry)
 	}
-	mmCreate.t.Fatalf("Unexpected call to LogRepositoryMock.Create. %v %v", ctx, logEntry)
+	mmCreateLogAuth.t.Fatalf("Unexpected call to LogRepositoryMock.CreateLogAuth. %v %v", ctx, logEntry)
 	return
 }
 
-// CreateAfterCounter returns a count of finished LogRepositoryMock.Create invocations
-func (mmCreate *LogRepositoryMock) CreateAfterCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreate.afterCreateCounter)
+// CreateLogAuthAfterCounter returns a count of finished LogRepositoryMock.CreateLogAuth invocations
+func (mmCreateLogAuth *LogRepositoryMock) CreateLogAuthAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateLogAuth.afterCreateLogAuthCounter)
 }
 
-// CreateBeforeCounter returns a count of LogRepositoryMock.Create invocations
-func (mmCreate *LogRepositoryMock) CreateBeforeCounter() uint64 {
-	return mm_atomic.LoadUint64(&mmCreate.beforeCreateCounter)
+// CreateLogAuthBeforeCounter returns a count of LogRepositoryMock.CreateLogAuth invocations
+func (mmCreateLogAuth *LogRepositoryMock) CreateLogAuthBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateLogAuth.beforeCreateLogAuthCounter)
 }
 
-// Calls returns a list of arguments used in each call to LogRepositoryMock.Create.
+// Calls returns a list of arguments used in each call to LogRepositoryMock.CreateLogAuth.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
-func (mmCreate *mLogRepositoryMockCreate) Calls() []*LogRepositoryMockCreateParams {
-	mmCreate.mutex.RLock()
+func (mmCreateLogAuth *mLogRepositoryMockCreateLogAuth) Calls() []*LogRepositoryMockCreateLogAuthParams {
+	mmCreateLogAuth.mutex.RLock()
 
-	argCopy := make([]*LogRepositoryMockCreateParams, len(mmCreate.callArgs))
-	copy(argCopy, mmCreate.callArgs)
+	argCopy := make([]*LogRepositoryMockCreateLogAuthParams, len(mmCreateLogAuth.callArgs))
+	copy(argCopy, mmCreateLogAuth.callArgs)
 
-	mmCreate.mutex.RUnlock()
+	mmCreateLogAuth.mutex.RUnlock()
 
 	return argCopy
 }
 
-// MinimockCreateDone returns true if the count of the Create invocations corresponds
+// MinimockCreateLogAuthDone returns true if the count of the CreateLogAuth invocations corresponds
 // the number of defined expectations
-func (m *LogRepositoryMock) MinimockCreateDone() bool {
-	if m.CreateMock.optional {
+func (m *LogRepositoryMock) MinimockCreateLogAuthDone() bool {
+	if m.CreateLogAuthMock.optional {
 		// Optional methods provide '0 or more' call count restriction.
 		return true
 	}
 
-	for _, e := range m.CreateMock.expectations {
+	for _, e := range m.CreateLogAuthMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
 			return false
 		}
 	}
 
-	return m.CreateMock.invocationsDone()
+	return m.CreateLogAuthMock.invocationsDone()
 }
 
-// MinimockCreateInspect logs each unmet expectation
-func (m *LogRepositoryMock) MinimockCreateInspect() {
-	for _, e := range m.CreateMock.expectations {
+// MinimockCreateLogAuthInspect logs each unmet expectation
+func (m *LogRepositoryMock) MinimockCreateLogAuthInspect() {
+	for _, e := range m.CreateLogAuthMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Errorf("Expected call to LogRepositoryMock.Create at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+			m.t.Errorf("Expected call to LogRepositoryMock.CreateLogAuth at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
 		}
 	}
 
-	afterCreateCounter := mm_atomic.LoadUint64(&m.afterCreateCounter)
+	afterCreateLogAuthCounter := mm_atomic.LoadUint64(&m.afterCreateLogAuthCounter)
 	// if default expectation was set then invocations count should be greater than zero
-	if m.CreateMock.defaultExpectation != nil && afterCreateCounter < 1 {
-		if m.CreateMock.defaultExpectation.params == nil {
-			m.t.Errorf("Expected call to LogRepositoryMock.Create at\n%s", m.CreateMock.defaultExpectation.returnOrigin)
+	if m.CreateLogAuthMock.defaultExpectation != nil && afterCreateLogAuthCounter < 1 {
+		if m.CreateLogAuthMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to LogRepositoryMock.CreateLogAuth at\n%s", m.CreateLogAuthMock.defaultExpectation.returnOrigin)
 		} else {
-			m.t.Errorf("Expected call to LogRepositoryMock.Create at\n%s with params: %#v", m.CreateMock.defaultExpectation.expectationOrigins.origin, *m.CreateMock.defaultExpectation.params)
+			m.t.Errorf("Expected call to LogRepositoryMock.CreateLogAuth at\n%s with params: %#v", m.CreateLogAuthMock.defaultExpectation.expectationOrigins.origin, *m.CreateLogAuthMock.defaultExpectation.params)
 		}
 	}
 	// if func was set then invocations count should be greater than zero
-	if m.funcCreate != nil && afterCreateCounter < 1 {
-		m.t.Errorf("Expected call to LogRepositoryMock.Create at\n%s", m.funcCreateOrigin)
+	if m.funcCreateLogAuth != nil && afterCreateLogAuthCounter < 1 {
+		m.t.Errorf("Expected call to LogRepositoryMock.CreateLogAuth at\n%s", m.funcCreateLogAuthOrigin)
 	}
 
-	if !m.CreateMock.invocationsDone() && afterCreateCounter > 0 {
-		m.t.Errorf("Expected %d calls to LogRepositoryMock.Create at\n%s but found %d calls",
-			mm_atomic.LoadUint64(&m.CreateMock.expectedInvocations), m.CreateMock.expectedInvocationsOrigin, afterCreateCounter)
+	if !m.CreateLogAuthMock.invocationsDone() && afterCreateLogAuthCounter > 0 {
+		m.t.Errorf("Expected %d calls to LogRepositoryMock.CreateLogAuth at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreateLogAuthMock.expectedInvocations), m.CreateLogAuthMock.expectedInvocationsOrigin, afterCreateLogAuthCounter)
+	}
+}
+
+type mLogRepositoryMockCreateLogUser struct {
+	optional           bool
+	mock               *LogRepositoryMock
+	defaultExpectation *LogRepositoryMockCreateLogUserExpectation
+	expectations       []*LogRepositoryMockCreateLogUserExpectation
+
+	callArgs []*LogRepositoryMockCreateLogUserParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// LogRepositoryMockCreateLogUserExpectation specifies expectation struct of the LogRepository.CreateLogUser
+type LogRepositoryMockCreateLogUserExpectation struct {
+	mock               *LogRepositoryMock
+	params             *LogRepositoryMockCreateLogUserParams
+	paramPtrs          *LogRepositoryMockCreateLogUserParamPtrs
+	expectationOrigins LogRepositoryMockCreateLogUserExpectationOrigins
+	results            *LogRepositoryMockCreateLogUserResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// LogRepositoryMockCreateLogUserParams contains parameters of the LogRepository.CreateLogUser
+type LogRepositoryMockCreateLogUserParams struct {
+	ctx      context.Context
+	logEntry *model.LogEntryUser
+}
+
+// LogRepositoryMockCreateLogUserParamPtrs contains pointers to parameters of the LogRepository.CreateLogUser
+type LogRepositoryMockCreateLogUserParamPtrs struct {
+	ctx      *context.Context
+	logEntry **model.LogEntryUser
+}
+
+// LogRepositoryMockCreateLogUserResults contains results of the LogRepository.CreateLogUser
+type LogRepositoryMockCreateLogUserResults struct {
+	err error
+}
+
+// LogRepositoryMockCreateLogUserOrigins contains origins of expectations of the LogRepository.CreateLogUser
+type LogRepositoryMockCreateLogUserExpectationOrigins struct {
+	origin         string
+	originCtx      string
+	originLogEntry string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Optional() *mLogRepositoryMockCreateLogUser {
+	mmCreateLogUser.optional = true
+	return mmCreateLogUser
+}
+
+// Expect sets up expected params for LogRepository.CreateLogUser
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Expect(ctx context.Context, logEntry *model.LogEntryUser) *mLogRepositoryMockCreateLogUser {
+	if mmCreateLogUser.mock.funcCreateLogUser != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Set")
+	}
+
+	if mmCreateLogUser.defaultExpectation == nil {
+		mmCreateLogUser.defaultExpectation = &LogRepositoryMockCreateLogUserExpectation{}
+	}
+
+	if mmCreateLogUser.defaultExpectation.paramPtrs != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by ExpectParams functions")
+	}
+
+	mmCreateLogUser.defaultExpectation.params = &LogRepositoryMockCreateLogUserParams{ctx, logEntry}
+	mmCreateLogUser.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmCreateLogUser.expectations {
+		if minimock.Equal(e.params, mmCreateLogUser.defaultExpectation.params) {
+			mmCreateLogUser.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmCreateLogUser.defaultExpectation.params)
+		}
+	}
+
+	return mmCreateLogUser
+}
+
+// ExpectCtxParam1 sets up expected param ctx for LogRepository.CreateLogUser
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) ExpectCtxParam1(ctx context.Context) *mLogRepositoryMockCreateLogUser {
+	if mmCreateLogUser.mock.funcCreateLogUser != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Set")
+	}
+
+	if mmCreateLogUser.defaultExpectation == nil {
+		mmCreateLogUser.defaultExpectation = &LogRepositoryMockCreateLogUserExpectation{}
+	}
+
+	if mmCreateLogUser.defaultExpectation.params != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Expect")
+	}
+
+	if mmCreateLogUser.defaultExpectation.paramPtrs == nil {
+		mmCreateLogUser.defaultExpectation.paramPtrs = &LogRepositoryMockCreateLogUserParamPtrs{}
+	}
+	mmCreateLogUser.defaultExpectation.paramPtrs.ctx = &ctx
+	mmCreateLogUser.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmCreateLogUser
+}
+
+// ExpectLogEntryParam2 sets up expected param logEntry for LogRepository.CreateLogUser
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) ExpectLogEntryParam2(logEntry *model.LogEntryUser) *mLogRepositoryMockCreateLogUser {
+	if mmCreateLogUser.mock.funcCreateLogUser != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Set")
+	}
+
+	if mmCreateLogUser.defaultExpectation == nil {
+		mmCreateLogUser.defaultExpectation = &LogRepositoryMockCreateLogUserExpectation{}
+	}
+
+	if mmCreateLogUser.defaultExpectation.params != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Expect")
+	}
+
+	if mmCreateLogUser.defaultExpectation.paramPtrs == nil {
+		mmCreateLogUser.defaultExpectation.paramPtrs = &LogRepositoryMockCreateLogUserParamPtrs{}
+	}
+	mmCreateLogUser.defaultExpectation.paramPtrs.logEntry = &logEntry
+	mmCreateLogUser.defaultExpectation.expectationOrigins.originLogEntry = minimock.CallerInfo(1)
+
+	return mmCreateLogUser
+}
+
+// Inspect accepts an inspector function that has same arguments as the LogRepository.CreateLogUser
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Inspect(f func(ctx context.Context, logEntry *model.LogEntryUser)) *mLogRepositoryMockCreateLogUser {
+	if mmCreateLogUser.mock.inspectFuncCreateLogUser != nil {
+		mmCreateLogUser.mock.t.Fatalf("Inspect function is already set for LogRepositoryMock.CreateLogUser")
+	}
+
+	mmCreateLogUser.mock.inspectFuncCreateLogUser = f
+
+	return mmCreateLogUser
+}
+
+// Return sets up results that will be returned by LogRepository.CreateLogUser
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Return(err error) *LogRepositoryMock {
+	if mmCreateLogUser.mock.funcCreateLogUser != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Set")
+	}
+
+	if mmCreateLogUser.defaultExpectation == nil {
+		mmCreateLogUser.defaultExpectation = &LogRepositoryMockCreateLogUserExpectation{mock: mmCreateLogUser.mock}
+	}
+	mmCreateLogUser.defaultExpectation.results = &LogRepositoryMockCreateLogUserResults{err}
+	mmCreateLogUser.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmCreateLogUser.mock
+}
+
+// Set uses given function f to mock the LogRepository.CreateLogUser method
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Set(f func(ctx context.Context, logEntry *model.LogEntryUser) (err error)) *LogRepositoryMock {
+	if mmCreateLogUser.defaultExpectation != nil {
+		mmCreateLogUser.mock.t.Fatalf("Default expectation is already set for the LogRepository.CreateLogUser method")
+	}
+
+	if len(mmCreateLogUser.expectations) > 0 {
+		mmCreateLogUser.mock.t.Fatalf("Some expectations are already set for the LogRepository.CreateLogUser method")
+	}
+
+	mmCreateLogUser.mock.funcCreateLogUser = f
+	mmCreateLogUser.mock.funcCreateLogUserOrigin = minimock.CallerInfo(1)
+	return mmCreateLogUser.mock
+}
+
+// When sets expectation for the LogRepository.CreateLogUser which will trigger the result defined by the following
+// Then helper
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) When(ctx context.Context, logEntry *model.LogEntryUser) *LogRepositoryMockCreateLogUserExpectation {
+	if mmCreateLogUser.mock.funcCreateLogUser != nil {
+		mmCreateLogUser.mock.t.Fatalf("LogRepositoryMock.CreateLogUser mock is already set by Set")
+	}
+
+	expectation := &LogRepositoryMockCreateLogUserExpectation{
+		mock:               mmCreateLogUser.mock,
+		params:             &LogRepositoryMockCreateLogUserParams{ctx, logEntry},
+		expectationOrigins: LogRepositoryMockCreateLogUserExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmCreateLogUser.expectations = append(mmCreateLogUser.expectations, expectation)
+	return expectation
+}
+
+// Then sets up LogRepository.CreateLogUser return parameters for the expectation previously defined by the When method
+func (e *LogRepositoryMockCreateLogUserExpectation) Then(err error) *LogRepositoryMock {
+	e.results = &LogRepositoryMockCreateLogUserResults{err}
+	return e.mock
+}
+
+// Times sets number of times LogRepository.CreateLogUser should be invoked
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Times(n uint64) *mLogRepositoryMockCreateLogUser {
+	if n == 0 {
+		mmCreateLogUser.mock.t.Fatalf("Times of LogRepositoryMock.CreateLogUser mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmCreateLogUser.expectedInvocations, n)
+	mmCreateLogUser.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmCreateLogUser
+}
+
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) invocationsDone() bool {
+	if len(mmCreateLogUser.expectations) == 0 && mmCreateLogUser.defaultExpectation == nil && mmCreateLogUser.mock.funcCreateLogUser == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmCreateLogUser.mock.afterCreateLogUserCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmCreateLogUser.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// CreateLogUser implements mm_repository.LogRepository
+func (mmCreateLogUser *LogRepositoryMock) CreateLogUser(ctx context.Context, logEntry *model.LogEntryUser) (err error) {
+	mm_atomic.AddUint64(&mmCreateLogUser.beforeCreateLogUserCounter, 1)
+	defer mm_atomic.AddUint64(&mmCreateLogUser.afterCreateLogUserCounter, 1)
+
+	mmCreateLogUser.t.Helper()
+
+	if mmCreateLogUser.inspectFuncCreateLogUser != nil {
+		mmCreateLogUser.inspectFuncCreateLogUser(ctx, logEntry)
+	}
+
+	mm_params := LogRepositoryMockCreateLogUserParams{ctx, logEntry}
+
+	// Record call args
+	mmCreateLogUser.CreateLogUserMock.mutex.Lock()
+	mmCreateLogUser.CreateLogUserMock.callArgs = append(mmCreateLogUser.CreateLogUserMock.callArgs, &mm_params)
+	mmCreateLogUser.CreateLogUserMock.mutex.Unlock()
+
+	for _, e := range mmCreateLogUser.CreateLogUserMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmCreateLogUser.CreateLogUserMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmCreateLogUser.CreateLogUserMock.defaultExpectation.Counter, 1)
+		mm_want := mmCreateLogUser.CreateLogUserMock.defaultExpectation.params
+		mm_want_ptrs := mmCreateLogUser.CreateLogUserMock.defaultExpectation.paramPtrs
+
+		mm_got := LogRepositoryMockCreateLogUserParams{ctx, logEntry}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmCreateLogUser.t.Errorf("LogRepositoryMock.CreateLogUser got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateLogUser.CreateLogUserMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.logEntry != nil && !minimock.Equal(*mm_want_ptrs.logEntry, mm_got.logEntry) {
+				mmCreateLogUser.t.Errorf("LogRepositoryMock.CreateLogUser got unexpected parameter logEntry, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmCreateLogUser.CreateLogUserMock.defaultExpectation.expectationOrigins.originLogEntry, *mm_want_ptrs.logEntry, mm_got.logEntry, minimock.Diff(*mm_want_ptrs.logEntry, mm_got.logEntry))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmCreateLogUser.t.Errorf("LogRepositoryMock.CreateLogUser got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmCreateLogUser.CreateLogUserMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmCreateLogUser.CreateLogUserMock.defaultExpectation.results
+		if mm_results == nil {
+			mmCreateLogUser.t.Fatal("No results are set for the LogRepositoryMock.CreateLogUser")
+		}
+		return (*mm_results).err
+	}
+	if mmCreateLogUser.funcCreateLogUser != nil {
+		return mmCreateLogUser.funcCreateLogUser(ctx, logEntry)
+	}
+	mmCreateLogUser.t.Fatalf("Unexpected call to LogRepositoryMock.CreateLogUser. %v %v", ctx, logEntry)
+	return
+}
+
+// CreateLogUserAfterCounter returns a count of finished LogRepositoryMock.CreateLogUser invocations
+func (mmCreateLogUser *LogRepositoryMock) CreateLogUserAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateLogUser.afterCreateLogUserCounter)
+}
+
+// CreateLogUserBeforeCounter returns a count of LogRepositoryMock.CreateLogUser invocations
+func (mmCreateLogUser *LogRepositoryMock) CreateLogUserBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmCreateLogUser.beforeCreateLogUserCounter)
+}
+
+// Calls returns a list of arguments used in each call to LogRepositoryMock.CreateLogUser.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmCreateLogUser *mLogRepositoryMockCreateLogUser) Calls() []*LogRepositoryMockCreateLogUserParams {
+	mmCreateLogUser.mutex.RLock()
+
+	argCopy := make([]*LogRepositoryMockCreateLogUserParams, len(mmCreateLogUser.callArgs))
+	copy(argCopy, mmCreateLogUser.callArgs)
+
+	mmCreateLogUser.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockCreateLogUserDone returns true if the count of the CreateLogUser invocations corresponds
+// the number of defined expectations
+func (m *LogRepositoryMock) MinimockCreateLogUserDone() bool {
+	if m.CreateLogUserMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.CreateLogUserMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.CreateLogUserMock.invocationsDone()
+}
+
+// MinimockCreateLogUserInspect logs each unmet expectation
+func (m *LogRepositoryMock) MinimockCreateLogUserInspect() {
+	for _, e := range m.CreateLogUserMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to LogRepositoryMock.CreateLogUser at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterCreateLogUserCounter := mm_atomic.LoadUint64(&m.afterCreateLogUserCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.CreateLogUserMock.defaultExpectation != nil && afterCreateLogUserCounter < 1 {
+		if m.CreateLogUserMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to LogRepositoryMock.CreateLogUser at\n%s", m.CreateLogUserMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to LogRepositoryMock.CreateLogUser at\n%s with params: %#v", m.CreateLogUserMock.defaultExpectation.expectationOrigins.origin, *m.CreateLogUserMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcCreateLogUser != nil && afterCreateLogUserCounter < 1 {
+		m.t.Errorf("Expected call to LogRepositoryMock.CreateLogUser at\n%s", m.funcCreateLogUserOrigin)
+	}
+
+	if !m.CreateLogUserMock.invocationsDone() && afterCreateLogUserCounter > 0 {
+		m.t.Errorf("Expected %d calls to LogRepositoryMock.CreateLogUser at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.CreateLogUserMock.expectedInvocations), m.CreateLogUserMock.expectedInvocationsOrigin, afterCreateLogUserCounter)
 	}
 }
 
@@ -389,7 +741,9 @@ func (m *LogRepositoryMock) MinimockCreateInspect() {
 func (m *LogRepositoryMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
 		if !m.minimockDone() {
-			m.MinimockCreateInspect()
+			m.MinimockCreateLogAuthInspect()
+
+			m.MinimockCreateLogUserInspect()
 		}
 	})
 }
@@ -413,5 +767,6 @@ func (m *LogRepositoryMock) MinimockWait(timeout mm_time.Duration) {
 func (m *LogRepositoryMock) minimockDone() bool {
 	done := true
 	return done &&
-		m.MinimockCreateDone()
+		m.MinimockCreateLogAuthDone() &&
+		m.MinimockCreateLogUserDone()
 }
