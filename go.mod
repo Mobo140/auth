@@ -1,4 +1,5 @@
-module github.com/Mobo140/microservices/auth
+module github.com/Mobo140/auth
+
 
 go 1.22.7
 
@@ -6,12 +7,12 @@ toolchain go1.22.8
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/Mobo140/platform_common v1.3.0
+	github.com/Mobo140/platform_common v1.5.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
-	github.com/gojuno/minimock/v3 v3.4.1
+	github.com/gojuno/minimock/v3 v3.4.3
 	github.com/gomodule/redigo v1.9.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
 	github.com/jackc/pgx/v4 v4.18.3
