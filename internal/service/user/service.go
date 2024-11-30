@@ -67,6 +67,7 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
 		info, errTx = s.dbRepository.Get(ctx, id)
+
 		if errTx != nil {
 			return errTx
 		}

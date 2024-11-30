@@ -20,7 +20,7 @@ type swaggerConfig struct {
 	port string
 }
 
-func NewSwaggerConfig() (*swaggerConfig, error) {
+func NewSwaggerConfig() (*swaggerConfig, error) { //nolint:revive // it's ok
 	host := os.Getenv(swaggerHost)
 	if len(host) == 0 {
 		return nil, errors.New("swagger host not found")

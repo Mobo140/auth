@@ -38,8 +38,9 @@ func TestCreate(t *testing.T) {
 		email           = gofakeit.Email()
 		password        = gofakeit.Password(true, true, true, true, true, 10)
 		passwordConfirm = password
-		hashPassword, _ = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		role            = (int64)(0)
+		hashPassword, _ = bcrypt.GenerateFromPassword([]byte(password), //nolint:revive,errcheck // ошибка здесь допустима
+			bcrypt.DefaultCost)
+		role = (int64)(0)
 
 		serviceErr       = fmt.Errorf("service create error")
 		conversationErr  = fmt.Errorf("invalid role value: 5")
@@ -83,13 +84,14 @@ func TestCreate(t *testing.T) {
 			},
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
-				mock.CreateMock.Set(func(ctx context.Context, userArg *model.User) (int64, error) {
+				mock.CreateMock.Set(func(_ context.Context, userArg *model.User) (int64, error) {
 					require.Equal(t, user.Name, userArg.Name)
 					require.Equal(t, user.Email, userArg.Email)
 					require.Equal(t, user.Role, userArg.Role)
 					// Поле HashedPassword пропускаем
 					return id, nil
 				})
+
 				return mock
 			},
 			want: res,
@@ -110,6 +112,7 @@ func TestCreate(t *testing.T) {
 			},
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
+
 				return mock
 			},
 			want: nil,
@@ -124,7 +127,7 @@ func TestCreate(t *testing.T) {
 			err:  serviceErr,
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
-				mock.CreateMock.Set(func(ctx context.Context, userArg *model.User) (int64, error) {
+				mock.CreateMock.Set(func(_ context.Context, userArg *model.User) (int64, error) {
 					require.Equal(t, user.Name, userArg.Name)
 					require.Equal(t, user.Email, userArg.Email)
 					require.Equal(t, user.Role, userArg.Role)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/model"
@@ -33,7 +34,7 @@ func NewService(
 	logRepository repository.LogRepository,
 	txManager db.TxManager,
 	cfg config.SecretConfig,
-) *serv {
+) *serv { //nolint:revive //it's ok
 	return &serv{
 		accessDBRepository:    accessDBRepository,
 		accessCacheRepository: accessCacheRepository,
@@ -75,19 +76,19 @@ func (s *serv) accessibleRoles(ctx context.Context, username string) (map[string
 			var errTx error
 			var errCache error
 
-			//check data in cache
+			// check data in cache
 			accessData, errCache = s.accessCacheRepository.GetEndpoints(ctx)
 			if errCache == nil && accessData != nil {
 				return nil
 			}
 
-			//no data in cache. Check in db
+			// no data in cache. Check in db
 			accessData, errTx = s.accessDBRepository.GetEndpointsAccess(ctx)
 			if errTx != nil {
 				return errTx
 			}
 
-			//write data to cache
+			// write data to cache
 			errCache = s.accessCacheRepository.SetEndpoints(ctx, accessData)
 			if errCache != nil {
 				log.Printf("failed to set endpoints in cache: %v", errCache)
@@ -111,9 +112,8 @@ func (s *serv) accessibleRoles(ctx context.Context, username string) (map[string
 		}
 
 		for _, access := range accessData {
-			accessibleRoles[access.Endpoint] = string(access.Role)
+			accessibleRoles[access.Endpoint] = strconv.FormatInt(access.Role, 10)
 		}
-
 	}
 
 	return accessibleRoles, nil

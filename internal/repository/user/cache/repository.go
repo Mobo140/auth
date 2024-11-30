@@ -17,7 +17,7 @@ type userCache struct {
 	cache cache.Client
 }
 
-func NewRepository(cache cache.Client) *userCache {
+func NewRepository(cache cache.Client) *userCache { //nolint:revive // it's ok
 	return &userCache{cache: cache}
 }
 
@@ -28,7 +28,7 @@ func (r *userCache) GetHashAndRoleByUsername(ctx context.Context, username strin
 	}
 
 	if len(values) == 0 {
-		return nil, model.ErrorUserNotFound
+		return nil, model.ErrUserNotFound
 	}
 
 	var data modelRepo.UserAuthData

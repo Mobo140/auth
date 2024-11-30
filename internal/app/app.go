@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Mobo140/platform_common/pkg/closer"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	descAccess "github.com/Mobo140/microservices/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/microservices/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/microservices/auth/pkg/user_v1"
 	_ "github.com/Mobo140/microservices/auth/statik" // init statik
+	"github.com/Mobo140/platform_common/pkg/closer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
@@ -24,7 +24,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-// не гуд, куда-то в другое место засунуть или указывать прямо
+// не гуд, куда-то в другое место засунуть или указывать прямо.
 var (
 	count = 3
 )

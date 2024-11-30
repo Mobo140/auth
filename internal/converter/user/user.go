@@ -41,6 +41,7 @@ func ToUserFromDesc(user *desc.User) (*model.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate password hash: %w", err)
 	}
+
 	return &model.User{
 		Name:           user.Name,
 		Email:          user.Email,

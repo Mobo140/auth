@@ -1,6 +1,7 @@
 package env
 
 import (
+	"errors"
 	"os"
 
 	"github.com/Mobo140/microservices/auth/internal/config"
@@ -14,11 +15,10 @@ type storageConfig struct {
 	mode string
 }
 
-func NewStorageConfig() (*storageConfig, error) {
+func NewStorageConfig() (*storageConfig, error) { //nolint:revive // it's ok
 	storageMode := os.Getenv(storageModeEnvName)
 	if len(storageMode) == 0 {
-		return nil, nil
-		//return nil, errors.New("storage mode not found")
+		return nil, errors.New("storage mode not found") // return nil, errors.New("storage mode not found")
 	}
 
 	return &storageConfig{

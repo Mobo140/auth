@@ -25,7 +25,7 @@ type secretConfig struct {
 	accessExpire  time.Duration
 }
 
-func NewSecretConfig() (*secretConfig, error) {
+func NewSecretConfig() (*secretConfig, error) { //nolint:revive // it's ok
 	refreshPath := os.Getenv(secretRefreshPath)
 	if refreshPath == "" {
 		return nil, errors.New("refresh secret path is not set")
@@ -47,6 +47,7 @@ func NewSecretConfig() (*secretConfig, error) {
 	}
 
 	refreshExpireStr := os.Getenv(expireRefresh)
+
 	if refreshPath == "" {
 		return nil, errors.New("refresh expire is not set")
 	}
@@ -57,6 +58,7 @@ func NewSecretConfig() (*secretConfig, error) {
 	}
 
 	accessExpireStr := os.Getenv(expireAccess)
+
 	if accessPath == "" {
 		return nil, errors.New("access expire is not set")
 	}

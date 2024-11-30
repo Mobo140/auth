@@ -6,15 +6,14 @@ toolchain go1.22.8
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/Mobo140/platform_common v1.3.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
-	github.com/georgysavva/scany v1.2.2
 	github.com/gojuno/minimock/v3 v3.4.1
 	github.com/gomodule/redigo v1.9.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
-	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
@@ -28,9 +27,10 @@ require (
 )
 
 require (
-	github.com/Mobo140/platform_common v1.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/georgysavva/scany v1.2.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.14.3 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.3 // indirect

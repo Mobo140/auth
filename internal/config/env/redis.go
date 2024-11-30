@@ -30,7 +30,7 @@ type redisConfig struct {
 	idleTimeout time.Duration
 }
 
-func NewRedisConfig() (*redisConfig, error) {
+func NewRedisConfig() (*redisConfig, error) { //nolint:revive // it's ok
 	host := os.Getenv(redisHostEnvName)
 	if len(host) == 0 {
 		return nil, errors.New("redis host not set")

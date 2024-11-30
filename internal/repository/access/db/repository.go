@@ -4,11 +4,11 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	"github.com/Mobo140/microservices/auth/internal/repository/access/db/converter"
 	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/access/db/model"
+	"github.com/Mobo140/platform_common/pkg/db"
 )
 
 var _ repository.AccessDBRepository = (*accessRepo)(nil)
@@ -23,7 +23,7 @@ type accessRepo struct {
 	db db.Client
 }
 
-func NewRepository(db db.Client) *accessRepo {
+func NewRepository(db db.Client) *accessRepo { //nolint:revive //it's ok
 	return &accessRepo{db: db}
 }
 

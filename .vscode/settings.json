@@ -1,7 +1,9 @@
 {
-    "go.lintOnSave": "package",
-    "go.lintTool": "golangci-lint",
-    "go.useLanguageServer": true,
-    "editor.formatOnSave": true
-  }
+  "go.lintOnSave": "workspace", 
+  "go.lintTool": "golangci-lint", 
+  "go.useLanguageServer": true, 
+  "editor.formatOnSave": true, 
+  "go.formatTool": "goimports"
+}
+
   

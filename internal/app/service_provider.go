@@ -6,7 +6,6 @@ import (
 
 	"github.com/Mobo140/microservices/auth/internal/client/cache"
 	"github.com/Mobo140/microservices/auth/internal/client/cache/redis"
-	"github.com/Mobo140/platform_common/pkg/db/transaction"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/config/env"
 	"github.com/Mobo140/microservices/auth/internal/repository"
@@ -25,6 +24,7 @@ import (
 	"github.com/Mobo140/platform_common/pkg/closer"
 	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/platform_common/pkg/db/pg"
+	"github.com/Mobo140/platform_common/pkg/db/transaction"
 	redigo "github.com/gomodule/redigo/redis"
 )
 
@@ -259,7 +259,6 @@ func (s *serviceProvider) RedisConfig() config.RedisConfig {
 		cfg, err := env.NewRedisConfig()
 		if err != nil {
 			log.Fatalf("failed to get redis config: %v", err)
-
 		}
 
 		s.redisConfig = cfg

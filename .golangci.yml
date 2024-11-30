@@ -61,14 +61,13 @@ linters-settings:
   nolintlint:
     require-explanation: true
     require-specific: true
+    allow-unused: true
   wsl:
     allow-cuddle-declarations: true
     force-err-cuddling: true
     allow-assign-and-anything: true
   gocognit:
     min-complexity: 160
-  nolintlint:
-    allow-unused: true
 
 run:
   timeout: 5m

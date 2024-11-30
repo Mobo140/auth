@@ -2,12 +2,6 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/Masterminds/squirrel v1.5.4 h1:uUcX/aBc8O7Fg9kaISIUsHXdKuqehiXAMQTYX8afzqM=
 github.com/Masterminds/squirrel v1.5.4/go.mod h1:NNaOrjSoIDfDA40n7sr2tPNZRfjzjA400rg+riTZj10=
-github.com/Mobo140/platform_common v1.0.0 h1:1Yq143ZLf0Ri41o/cEDr/gwwUt3ujym67+QPCRAG6DQ=
-github.com/Mobo140/platform_common v1.0.0/go.mod h1:/QnCreLbyxFsjdwZZwziTOeG/mrirMrg0WpWxTB88hI=
-github.com/Mobo140/platform_common v1.1.0 h1:F2LHj6KLWqiuRQyXmKkvUMg5MhIYnf9A/6V5F+5K7p0=
-github.com/Mobo140/platform_common v1.1.0/go.mod h1:/QnCreLbyxFsjdwZZwziTOeG/mrirMrg0WpWxTB88hI=
-github.com/Mobo140/platform_common v1.2.0 h1:Vpibcvn/n+YfgKrs5Go1E9Y61r1kf3GlbPhKTXOxwTc=
-github.com/Mobo140/platform_common v1.2.0/go.mod h1:/QnCreLbyxFsjdwZZwziTOeG/mrirMrg0WpWxTB88hI=
 github.com/Mobo140/platform_common v1.3.0 h1:Vn3tiVojij38yZR9qaxZKZUvu9q+Mvc/BYRpUxmdJ9U=
 github.com/Mobo140/platform_common v1.3.0/go.mod h1:/QnCreLbyxFsjdwZZwziTOeG/mrirMrg0WpWxTB88hI=
 github.com/brianvoe/gofakeit v3.18.0+incompatible h1:wDOmHc9DLG4nRjUVVaxA+CEglKOW72Y5+4WNxUIkjM8=

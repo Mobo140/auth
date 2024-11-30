@@ -7,12 +7,12 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	"github.com/Mobo140/microservices/auth/internal/service"
 	"github.com/Mobo140/microservices/auth/internal/utils"
+	"github.com/Mobo140/platform_common/pkg/db"
 )
 
 var _ service.AuthService = (*serv)(nil)
@@ -31,7 +31,7 @@ func NewService(
 	logRepository repository.LogRepository,
 	txManager db.TxManager,
 	cfg config.SecretConfig,
-) *serv {
+) *serv { //nolint:revive //it's ok
 	return &serv{
 		userDBRepository:    userDBrepository,
 		userCacheRepository: cacheDBrepository,
@@ -49,19 +49,19 @@ func (s *serv) Login(ctx context.Context, data *model.LoginData) (*string, error
 		var errTx error
 		var errCache error
 
-		//check data in cache
+		// check data in cache
 		userData, errCache = s.userCacheRepository.GetHashAndRoleByUsername(ctx, data.Username)
 		if errCache == nil && userData != nil {
 			return nil
 		}
 
-		//no data in cache. Check in db
+		// no data in cache. Check in db
 		userData, errTx = s.userDBRepository.GetHashAndRoleByUsername(ctx, data.Username)
 		if errTx != nil {
 			return errTx
 		}
 
-		//write data to cache
+		// write data to cache
 		errCache = s.userCacheRepository.SetHashAndRole(ctx, data.Username, userData)
 		if errCache != nil {
 			log.Printf("failed to set user data in cache: %v", errCache)
@@ -125,7 +125,6 @@ func (s *serv) GetRefreshToken(ctx context.Context, refreshTokenStr string) (*st
 		errTx = s.logRepository.CreateLogAuth(ctx, &logEntry)
 		if errTx != nil {
 			return fmt.Errorf("failed to create log entry, Role: %q", claims.Role)
-
 		}
 
 		return nil

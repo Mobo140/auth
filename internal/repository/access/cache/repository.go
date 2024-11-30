@@ -21,7 +21,7 @@ type accessCache struct {
 	cache cache.Client
 }
 
-func NewRepository(cache cache.Client) *accessCache {
+func NewRepository(cache cache.Client) *accessCache { //nolint:revive //it's ok
 	return &accessCache{cache: cache}
 }
 
@@ -32,7 +32,7 @@ func (r *accessCache) GetEndpoints(ctx context.Context) ([]*model.AccessEndpoint
 	}
 
 	if len(endpoints) == 0 {
-		return nil, model.ErrorEndpointsNotFound
+		return nil, model.ErrEndpointsNotFound
 	}
 
 	var accessEndpoints []*modelCache.AccessEndpoint

@@ -7,11 +7,11 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
 
-	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/microservices/auth/internal/model"
 	"github.com/Mobo140/microservices/auth/internal/repository"
 	"github.com/Mobo140/microservices/auth/internal/repository/user/db/converter"
 	modelRepo "github.com/Mobo140/microservices/auth/internal/repository/user/db/model"
+	"github.com/Mobo140/platform_common/pkg/db"
 )
 
 var _ repository.UserDBRepository = (*userRepo)(nil)
@@ -81,8 +81,9 @@ func (r *userRepo) Get(ctx context.Context, id int64) (*model.UserInfo, error) {
 
 	if err = r.db.DB().ScanOneContext(ctx, &info, q, args...); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, model.ErrorUserNotFound
+			return nil, model.ErrUserNotFound
 		}
+
 		return nil, err
 	}
 
@@ -186,8 +187,9 @@ func (r *userRepo) GetHashAndRoleByUsername(ctx context.Context, username string
 	var data modelRepo.UserAuthData
 	if err := r.db.DB().ScanOneContext(ctx, &data, q, args...); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, model.ErrorUserNotFound
+			return nil, model.ErrUserNotFound
 		}
+
 		return nil, err
 	}
 

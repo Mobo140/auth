@@ -12,7 +12,7 @@ type redisClient struct {
 	masterRedis cache.Cache
 }
 
-func NewClient(pool *redis.Pool, config config.RedisConfig) *redisClient {
+func NewClient(pool *redis.Pool, config config.RedisConfig) *redisClient { //nolint:revive // it's ok
 	return &redisClient{
 		masterRedis: NewRD(pool, config),
 	}

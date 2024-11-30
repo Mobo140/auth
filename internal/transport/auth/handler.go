@@ -32,7 +32,9 @@ func (i *Implementation) Login(ctx context.Context, req *desc.LoginRequest) (*de
 	}, nil
 }
 
-func (i *Implementation) GetRefreshToken(ctx context.Context, req *desc.GetRefreshTokenRequest) (*desc.GetRefreshTokenResponse, error) {
+func (i *Implementation) GetRefreshToken(ctx context.Context,
+	req *desc.GetRefreshTokenRequest,
+) (*desc.GetRefreshTokenResponse, error) {
 	refreshTokenStr := req.GetRefreshToken()
 
 	refreshToken, err := i.authService.GetRefreshToken(ctx, refreshTokenStr)
@@ -45,7 +47,10 @@ func (i *Implementation) GetRefreshToken(ctx context.Context, req *desc.GetRefre
 	}, nil
 }
 
-func (i *Implementation) GetAccessToken(ctx context.Context, req *desc.GetAccessTokenRequest) (*desc.GetAccessTokenResponse, error) {
+func (i *Implementation) GetAccessToken(
+	ctx context.Context,
+	req *desc.GetAccessTokenRequest,
+) (*desc.GetAccessTokenResponse, error) {
 	refreshTokenStr := req.GetRefreshToken()
 
 	accessToken, err := i.authService.GetAccessToken(ctx, refreshTokenStr)

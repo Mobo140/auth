@@ -11,4 +11,3 @@ func ToLoginDataFromDesc(req *desc.LoginRequest) *model.LoginData {
 		Password: req.Password,
 	}
 }
-

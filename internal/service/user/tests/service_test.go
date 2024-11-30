@@ -40,7 +40,7 @@ func TestCreate(t *testing.T) {
 		password = gofakeit.Password(true, true, true, true, true, 10)
 		role     = (int64)(0)
 
-		hashPassword, _ = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		hashPassword, _ = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost) //nolint:errcheck //it's ok
 		repositoryErr   = fmt.Errorf("create userRepo error")
 		logErr          = fmt.Errorf("create log error")
 		transactionErr  = fmt.Errorf("transaction error")

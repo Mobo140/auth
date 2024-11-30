@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Mobo140/microservices/auth/internal/config"
 	"github.com/Mobo140/microservices/auth/internal/service"
 	desc "github.com/Mobo140/microservices/auth/pkg/access_v1"
 	"google.golang.org/grpc/metadata"
@@ -19,7 +18,6 @@ const (
 type Implementation struct {
 	desc.UnimplementedAccessV1Server
 	accessService service.AccessService
-	cfg           config.SecretConfig
 }
 
 func NewImplementation(accessService service.AccessService) *Implementation {

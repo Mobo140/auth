@@ -17,7 +17,7 @@ type rd struct {
 	config config.RedisConfig
 }
 
-func NewRD(pool *redis.Pool, config config.RedisConfig) *rd {
+func NewRD(pool *redis.Pool, config config.RedisConfig) *rd { //nolint:revive // it's ok
 	return &rd{
 		pool:   pool,
 		config: config,
@@ -25,8 +25,9 @@ func NewRD(pool *redis.Pool, config config.RedisConfig) *rd {
 }
 
 func (c *rd) Set(ctx context.Context, key string, value interface{}) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
+
 		_, errEx = conn.Do("SET", key, value)
 		if errEx != nil {
 			return errEx
@@ -43,8 +44,9 @@ func (c *rd) Set(ctx context.Context, key string, value interface{}) error {
 }
 
 func (c *rd) HashSet(ctx context.Context, key string, values interface{}) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
+
 		_, errEx = conn.Do("HSET", redis.Args{key}.AddFlat(values)...)
 		if errEx != nil {
 			return errEx
@@ -63,8 +65,9 @@ func (c *rd) HashSet(ctx context.Context, key string, values interface{}) error 
 func (c *rd) Get(ctx context.Context, key string) (interface{}, error) {
 	var value interface{}
 
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
+
 		value, errEx = conn.Do("GET", key)
 		if errEx != nil {
 			return errEx
@@ -82,8 +85,9 @@ func (c *rd) Get(ctx context.Context, key string) (interface{}, error) {
 
 func (c *rd) HGetAll(ctx context.Context, key string) ([]interface{}, error) {
 	var values []interface{}
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
+
 		values, errEx = redis.Values((conn.Do("HGETALL", key)))
 		if errEx != nil {
 			return errEx
@@ -91,6 +95,7 @@ func (c *rd) HGetAll(ctx context.Context, key string) ([]interface{}, error) {
 
 		return nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +104,9 @@ func (c *rd) HGetAll(ctx context.Context, key string) ([]interface{}, error) {
 }
 
 func (c *rd) Expire(ctx context.Context, key string, expiration time.Duration) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
+
 		_, errEx = conn.Do("EXPIRE", key, int(expiration.Seconds()))
 		if errEx != nil {
 			return errEx
@@ -117,8 +123,9 @@ func (c *rd) Expire(ctx context.Context, key string, expiration time.Duration) e
 }
 
 func (c *rd) Ping(ctx context.Context) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
+
 		_, errEx = conn.Do("PING")
 		if errEx != nil {
 			return errEx
@@ -139,6 +146,7 @@ func (c *rd) execute(ctx context.Context, fn cache.Handler) error {
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		err = conn.Close()
 		if err != nil {
@@ -170,6 +178,6 @@ func (c *rd) getConnect(ctx context.Context) (redis.Conn, error) {
 	return conn, nil
 }
 
-func (r *rd) Close() {
-	r.pool.Close()
+func (c *rd) Close() {
+	c.pool.Close()
 }

@@ -14,7 +14,7 @@ var _ repository.LogRepository = (*logRepo)(nil)
 const (
 	tableNameUser   = "logsUser"
 	tableNameAuth   = "logsAuth"
-	userIdColumn    = "user_id"
+	userIDColumn    = "user_id"
 	userNameColumn  = "username"
 	activityColumn  = "activity"
 	createdAtColumn = "created_at"
@@ -31,7 +31,7 @@ func NewRepository(db db.Client) *logRepo { //nolint:revive // it's ok
 func (l *logRepo) CreateLogUser(ctx context.Context, lg *model.LogEntryUser) error {
 	builder := sq.Insert(tableNameUser).
 		PlaceholderFormat(sq.Dollar).
-		Columns(userIdColumn, activityColumn, createdAtColumn).
+		Columns(userIDColumn, activityColumn, createdAtColumn).
 		Values(lg.UserID, lg.Action, lg.CreatedAt)
 
 	query, args, err := builder.ToSql()
