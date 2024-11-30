@@ -10,11 +10,11 @@ import (
 	"net/http"
 	"sync"
 
-	desc "github.com/Mobo140/auth/pkg/user_v1"
-	_ "github.com/Mobo140/auth/statik" // init statik
 	"github.com/Mobo140/auth/internal/config"
 	descAccess "github.com/Mobo140/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/auth/pkg/auth_v1"
+	desc "github.com/Mobo140/auth/pkg/user_v1"
+	_ "github.com/Mobo140/auth/statik" // init statik
 	"github.com/Mobo140/platform_common/pkg/closer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
