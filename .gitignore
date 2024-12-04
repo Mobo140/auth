@@ -10,6 +10,7 @@ service.pem
 service.key
 service.csr
 ca.srl
+**/logs/
 access_secret.key
 refresh_secret.key
 coverage_out
