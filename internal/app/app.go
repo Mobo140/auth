@@ -13,10 +13,10 @@ import (
 
 	"github.com/Mobo140/auth/internal/config"
 	"github.com/Mobo140/auth/internal/interceptor"
-	"github.com/Mobo140/auth/internal/logger"
 	descAccess "github.com/Mobo140/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/auth/pkg/user_v1"
+	"github.com/Mobo140/platform_common/pkg/logger"
 
 	_ "github.com/Mobo140/auth/statik" // init statik
 	"github.com/Mobo140/platform_common/pkg/closer"

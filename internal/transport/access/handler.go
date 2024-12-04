@@ -5,9 +5,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Mobo140/platform_common/pkg/logger"
 	"github.com/Mobo140/auth/internal/service"
 	desc "github.com/Mobo140/auth/pkg/access_v1"
+	"github.com/Mobo140/platform_common/pkg/logger"
 	"go.uber.org/zap"
 
 	"google.golang.org/grpc/metadata"
