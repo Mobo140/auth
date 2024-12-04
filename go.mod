@@ -6,7 +6,7 @@ toolchain go1.22.8
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/Mobo140/platform_common v1.5.0
+	github.com/Mobo140/platform_common v1.6.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Mobo140/auth/internal/logger"
+	"github.com/Mobo140/platform_common/pkg/logger"
 	"github.com/Mobo140/auth/internal/service"
 	desc "github.com/Mobo140/auth/pkg/access_v1"
 	"go.uber.org/zap"

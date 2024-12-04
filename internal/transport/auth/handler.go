@@ -4,7 +4,7 @@ import (
 	"context"
 
 	conv "github.com/Mobo140/auth/internal/converter/auth"
-	"github.com/Mobo140/auth/internal/logger"
+	"github.com/Mobo140/platform_common/pkg/logger"
 	"github.com/Mobo140/auth/internal/service"
 	desc "github.com/Mobo140/auth/pkg/auth_v1"
 	"go.uber.org/zap"

@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	conv "github.com/Mobo140/auth/internal/converter/user"
-	"github.com/Mobo140/auth/internal/logger"
 	"github.com/Mobo140/auth/internal/service"
 	desc "github.com/Mobo140/auth/pkg/user_v1"
+	"github.com/Mobo140/platform_common/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

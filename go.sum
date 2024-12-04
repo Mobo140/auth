@@ -5,6 +5,8 @@ github.com/Masterminds/squirrel v1.5.4 h1:uUcX/aBc8O7Fg9kaISIUsHXdKuqehiXAMQTYX8
 github.com/Masterminds/squirrel v1.5.4/go.mod h1:NNaOrjSoIDfDA40n7sr2tPNZRfjzjA400rg+riTZj10=
 github.com/Mobo140/platform_common v1.5.0 h1:RTgnaaldlxq2TpBYDq8k7reAT6feJWtbqYDmA/qOCgw=
 github.com/Mobo140/platform_common v1.5.0/go.mod h1:EQf2XPswMsKrDuS4HeoAMCZLlLj+YIMeNJrgcFLPqFY=
+github.com/Mobo140/platform_common v1.6.0 h1:RJsYmty0a0UoGOhx/geLK+9yJacyXEmR70SHlVmYB5s=
+github.com/Mobo140/platform_common v1.6.0/go.mod h1:yhuh0eIHEGxf2196CopMkg6tU4on+CUPVthIXiLkzts=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/brianvoe/gofakeit v3.18.0+incompatible h1:wDOmHc9DLG4nRjUVVaxA+CEglKOW72Y5+4WNxUIkjM8=
 github.com/brianvoe/gofakeit v3.18.0+incompatible/go.mod h1:kfwdRA90vvNhPutZWfH7WPaDzUjz+CZFqG+rPkOjGOc=

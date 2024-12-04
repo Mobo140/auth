@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/Mobo140/auth/internal/logger"
+	"github.com/Mobo140/platform_common/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
