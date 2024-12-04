@@ -4,8 +4,10 @@ import (
 	"context"
 
 	conv "github.com/Mobo140/auth/internal/converter/auth"
+	"github.com/Mobo140/auth/internal/logger"
 	"github.com/Mobo140/auth/internal/service"
 	desc "github.com/Mobo140/auth/pkg/auth_v1"
+	"go.uber.org/zap"
 )
 
 type Implementation struct {
@@ -24,8 +26,12 @@ func (i *Implementation) Login(ctx context.Context, req *desc.LoginRequest) (*de
 
 	refreshTokenData, err := i.authService.Login(ctx, data)
 	if err != nil {
+		logger.Error("Failed to login: ", zap.Error(err))
+
 		return nil, err
 	}
+
+	logger.Info("User authorized", zap.Any("login data", data))
 
 	return &desc.LoginResponse{
 		RefreshToken: *refreshTokenData,
@@ -39,8 +45,15 @@ func (i *Implementation) GetRefreshToken(ctx context.Context,
 
 	refreshToken, err := i.authService.GetRefreshToken(ctx, refreshTokenStr)
 	if err != nil {
+		logger.Error("Failed to get new refresh token by old: ",
+			zap.Any("old refresh token", refreshTokenStr),
+			zap.Error(err),
+		)
+
 		return nil, err
 	}
+
+	logger.Info("Get new refresh token: ", zap.Any("refresh token", refreshToken))
 
 	return &desc.GetRefreshTokenResponse{
 		RefreshToken: *refreshToken,
@@ -55,8 +68,15 @@ func (i *Implementation) GetAccessToken(
 
 	accessToken, err := i.authService.GetAccessToken(ctx, refreshTokenStr)
 	if err != nil {
+		logger.Error("Failed to get access token: ",
+			zap.Any("refresh token", refreshTokenStr),
+			zap.Error(err),
+		)
+
 		return nil, err
 	}
+
+	logger.Info("Get new access token: ", zap.Any("access token", accessToken))
 
 	return &desc.GetAccessTokenResponse{
 		AccessToken: *accessToken,
