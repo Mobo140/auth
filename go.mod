@@ -1,6 +1,5 @@
 module github.com/Mobo140/auth
 
-
 go 1.22.7
 
 toolchain go1.22.8
@@ -14,6 +13,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/gojuno/minimock/v3 v3.4.3
 	github.com/gomodule/redigo v1.9.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
@@ -21,10 +21,12 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.9.0
+	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.27.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241021214115-324edc3d5d38
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
@@ -42,6 +44,7 @@ require (
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.19.0 // indirect

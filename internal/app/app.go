@@ -8,25 +8,36 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/Mobo140/auth/internal/config"
+	"github.com/Mobo140/auth/internal/interceptor"
+	"github.com/Mobo140/auth/internal/logger"
 	descAccess "github.com/Mobo140/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/auth/pkg/user_v1"
+
 	_ "github.com/Mobo140/auth/statik" // init statik
 	"github.com/Mobo140/platform_common/pkg/closer"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // не гуд, куда-то в другое место засунуть или указывать прямо.
 var (
-	count = 3
+	count          = 3
+	logsMaxSize    = 10
+	logsMaxBackups = 3
+	logsMaxAge     = 7
 )
 
 type App struct {
@@ -35,10 +46,11 @@ type App struct {
 	httpServer      *http.Server
 	swaggerServer   *http.Server
 	configPath      string
+	loggerLevel     string
 }
 
-func NewApp(ctx context.Context, configPath string) (*App, error) {
-	a := &App{configPath: configPath}
+func NewApp(ctx context.Context, configPath string, loggerLevel string) (*App, error) {
+	a := &App{configPath: configPath, loggerLevel: loggerLevel}
 
 	err := a.initDeps(ctx)
 	if err != nil {
@@ -51,6 +63,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
+		a.initLogger,
 		a.initServiceProvider,
 		a.initGRPCServer,
 		a.initHTTPServer,
@@ -78,6 +91,52 @@ func (a *App) initConfig(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initLogger(_ context.Context) error {
+	logger.Init(getCore(getAtomicLevel(a.loggerLevel)))
+
+	err := config.Load(a.configPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getCore(level zap.AtomicLevel) zapcore.Core {
+	stdout := zapcore.AddSync(os.Stdout)
+
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   "logs/app.log",
+		MaxSize:    logsMaxSize, // megabytes
+		MaxBackups: logsMaxBackups,
+		MaxAge:     logsMaxAge, // days
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	return zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, level),
+		zapcore.NewCore(fileEncoder, file, level),
+	)
+}
+
+func getAtomicLevel(logLevel string) zap.AtomicLevel {
+	var level zapcore.Level
+	if err := level.Set(logLevel); err != nil {
+		log.Fatalf("failed to set log level: %v", err)
+	}
+
+	return zap.NewAtomicLevelAt(level)
+}
+
 func (a *App) initServiceProvider(_ context.Context) error {
 	a.serviceProvider = newServiceProvider()
 	return nil
@@ -90,7 +149,15 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		return err
 	}
 
-	a.grpcServer = grpc.NewServer(grpc.Creds(creds))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(creds),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.LogInterceptor,
+				interceptor.ValidateInterceptor,
+			),
+		),
+	)
 
 	reflection.Register(a.grpcServer)
 
