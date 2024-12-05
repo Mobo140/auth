@@ -35,8 +35,9 @@ type serviceProvider struct {
 	storageConfig config.StorageConfig
 	secretConfig  config.SecretConfig
 
-	httpConfig    config.HTTPConfig
-	swaggerConfig config.SwaggerConfig
+	httpConfig       config.HTTPConfig
+	swaggerConfig    config.SwaggerConfig
+	prometheusConfig config.PrometheusConfig
 
 	redisPool *redigo.Pool
 
@@ -182,6 +183,19 @@ func (s *serviceProvider) StorageConfig() config.StorageConfig {
 	}
 
 	return s.storageConfig
+}
+
+func (s *serviceProvider) PrometheusConfig() config.PrometheusConfig {
+	if s.prometheusConfig == nil {
+		cfg, err := env.NewPrometheusConfig()
+		if err != nil {
+			log.Fatalf("failed to get prometheus config: %s", err.Error())
+		}
+
+		s.prometheusConfig = cfg
+	}
+
+	return s.prometheusConfig
 }
 
 func (s *serviceProvider) RedisClient() cache.Client {

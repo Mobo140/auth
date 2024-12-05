@@ -1,0 +1,15 @@
+global: 
+  scrape_interval: 2s    # Как часто мы будем обращаться к приложению для сбора метрик
+  evaluation_interval: 2s # Как часто вычислять правила агрегации и алертинга  
+
+rule_files:      # Передаём конфиг алертов которые также надо учитывать при сборе метрик
+  - "alerts.yml"
+
+scrape_configs:   #List of scrape configs
+  - job_name: "prometheus"    # тут метрики сборщика мусора, горутин и тд собираются с самого прометеуса
+    static_configs:
+      - targets: [ "localhost:9090" ]   #Вызываем его на самого себя
+  
+  - job_name: "app" # также метрики должны собираются  с нашего сервиса
+    static_configs:
+      - targets: [ "host.docker.internal:2112" ] # Передаем localhost, который в докере

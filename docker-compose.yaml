@@ -1,11 +1,21 @@
-version: '3'
+version: "3"
 
 volumes:
+  prometheus_data:
   postgres_volume_local:
   redis-data:
   # postgres_volume_prod:
 
 services:
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+
   pg-local:
     image: postgres:16-alpine3.20
     env_file:
@@ -14,7 +24,7 @@ services:
       - "50001:5432"
     volumes:
       - postgres_volume_local:/var/lib/postgresql/data
-  
+
   # pg-prod:
   #   image: postgres:16-alpine3.20
   #   env_file:
@@ -23,7 +33,7 @@ services:
   #     - "50002:5432"
   #   volumes:
   #     - postgres_volume_prod:/var/lib/postgresql/data
-  
+
   migrator-local:
     build:
       context: .
@@ -31,13 +41,13 @@ services:
     restart: on-failure
     environment:
       DB_HOST: pg-local
-    
+
   redis:
     image: redis:7.2.5-alpine3.20
     container_name: redis-container
     ports:
       - "6379:6379"
-    volumes: 
+    volumes:
       - redis-data:/data
 
   # migrator-prod:
@@ -47,4 +57,3 @@ services:
   #   restart: on-failure
   #   environment:
   #     DB_HOST: pg-prod
-  

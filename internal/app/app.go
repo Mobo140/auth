@@ -17,6 +17,7 @@ import (
 	descAuth "github.com/Mobo140/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/auth/pkg/user_v1"
 	"github.com/Mobo140/platform_common/pkg/logger"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	_ "github.com/Mobo140/auth/statik" // init statik
 	"github.com/Mobo140/platform_common/pkg/closer"
@@ -33,19 +34,20 @@ import (
 )
 
 var (
-	count          = 3
+	count          = 4
 	logsMaxSize    = 10
 	logsMaxBackups = 3
 	logsMaxAge     = 7
 )
 
 type App struct {
-	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
-	httpServer      *http.Server
-	swaggerServer   *http.Server
-	configPath      string
-	loggerLevel     string
+	serviceProvider  *serviceProvider
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	swaggerServer    *http.Server
+	prometheusServer *http.Server
+	configPath       string
+	loggerLevel      string
 }
 
 func NewApp(ctx context.Context, configPath string, loggerLevel string) (*App, error) {
@@ -67,6 +69,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
+		a.initPrometheusServer,
 	}
 
 	for _, f := range inits {
@@ -154,6 +157,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 			grpcMiddleware.ChainUnaryServer(
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,
+				interceptor.MetricsInterceptor,
 			),
 		),
 	)
@@ -227,6 +231,18 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initPrometheusServer(_ context.Context) error {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	a.prometheusServer = &http.Server{
+		Addr:    a.serviceProvider.PrometheusConfig().Address(),
+		Handler: mux,
+	}
+
+	return nil
+}
+
 func (a *App) Run() error {
 	defer func() {
 		closer.CloseAll()
@@ -260,6 +276,15 @@ func (a *App) Run() error {
 		err := a.runSwaggerServer()
 		if err != nil {
 			log.Fatalf("failed to run Swagger server: %v", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		err := a.runPrometheusServer()
+		if err != nil {
+			log.Fatalf("failed to run Prometheus server: %v", err)
 		}
 	}()
 
@@ -299,6 +324,17 @@ func (a *App) runSwaggerServer() error {
 	log.Printf("Swagger server is running on: %s", a.serviceProvider.SwaggerConfig().Address())
 
 	err := a.swaggerServer.ListenAndServeTLS("../../service.pem", "../../service.key")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) runPrometheusServer() error {
+	log.Printf("Prometheus server is running on: %s", a.serviceProvider.PrometheusConfig().Address())
+
+	err := a.prometheusServer.ListenAndServe()
 	if err != nil {
 		return err
 	}
