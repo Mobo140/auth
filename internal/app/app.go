@@ -32,7 +32,6 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// не гуд, куда-то в другое место засунуть или указывать прямо.
 var (
 	count          = 3
 	logsMaxSize    = 10
