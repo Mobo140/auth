@@ -2,6 +2,7 @@ version: "3"
 
 volumes:
   prometheus_data:
+  grafana_data:
   postgres_volume_local:
   redis-data:
   # postgres_volume_prod:
@@ -16,6 +17,13 @@ services:
       - ./alerts.yml:/etc/prometheus/alerts.yml
       - prometheus_data:/prometheus
 
+  grafana:
+    image: grafana/grafana-oss:10.0.3
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    
   pg-local:
     image: postgres:16-alpine3.20
     env_file:
