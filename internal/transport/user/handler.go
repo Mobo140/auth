@@ -47,7 +47,7 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 		return nil, err
 	}
 
-	logger.Info("Create user: ", zap.Any("id", id))
+	logger.Info("Create user: ", zap.Int64("id", id))
 
 	return &desc.CreateResponse{Id: id}, nil
 }

@@ -38,6 +38,7 @@ type serviceProvider struct {
 	httpConfig       config.HTTPConfig
 	swaggerConfig    config.SwaggerConfig
 	prometheusConfig config.PrometheusConfig
+	jaegerConfig     config.JaegerConfig
 
 	redisPool *redigo.Pool
 
@@ -196,6 +197,18 @@ func (s *serviceProvider) PrometheusConfig() config.PrometheusConfig {
 	}
 
 	return s.prometheusConfig
+}
+
+func (s *serviceProvider) JaegerConfig() config.JaegerConfig {
+	if s.jaegerConfig == nil {
+		cfg, err := env.NewJaegerConfig()
+		if err != nil {
+			log.Fatalf("failed to initialize jaeger config: %v", err)
+		}
+		s.jaegerConfig = cfg
+	}
+
+	return s.jaegerConfig
 }
 
 func (s *serviceProvider) RedisClient() cache.Client {

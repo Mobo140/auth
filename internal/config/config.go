@@ -43,6 +43,10 @@ type PrometheusConfig interface {
 	Address() string
 }
 
+type JaegerConfig interface {
+	Address() string
+}
+
 func Load(path string) error {
 	err := godotenv.Load(path)
 	if err != nil {
