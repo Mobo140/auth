@@ -9,12 +9,14 @@ import (
 
 	"github.com/Mobo140/auth/internal/config"
 	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 
 	"github.com/Mobo140/auth/internal/model"
 	"github.com/Mobo140/auth/internal/repository"
 	"github.com/Mobo140/auth/internal/service"
 	"github.com/Mobo140/auth/internal/utils"
 	"github.com/Mobo140/platform_common/pkg/db"
+	"github.com/Mobo140/platform_common/pkg/logger"
 )
 
 var (
@@ -50,13 +52,22 @@ func (s *serv) Check(ctx context.Context, accessToken string, endpoint string) e
 	span, ctx := opentracing.StartSpanFromContext(ctx, "Check/Service")
 	defer span.Finish()
 
+	logger.Info("Verify token...")
+
 	claims, err := utils.VerifyToken(accessToken, s.cfg.AccessKey())
 	if err != nil {
-		return errors.New("access token is invalid")
+		err = fmt.Errorf("access token is invalid: %w", err)
+		logger.Error("Failed to verify token: %w", zap.Error(err))
+
+		return err
 	}
+
+	logger.Info("Token verifyed")
 
 	accessibleMap, err := s.accessibleRoles(ctx, claims.Username)
 	if err != nil {
+		logger.Error("Failed to get accessible roles: %w", zap.Error(err))
+
 		return errors.New("failed to get accessible roles")
 	}
 

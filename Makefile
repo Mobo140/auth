@@ -18,13 +18,9 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.20.0
 	GOBIN=$(LOCAL_BIN) go install github.com/rakyll/statik@v0.1.7
 
-
-
-
 get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
-
 
 generate:
 	mkdir -p pkg/swagger
@@ -32,7 +28,6 @@ generate:
 	make generate-auth-api
 	make generate-access-api
 	$(LOCAL_BIN)/statik -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
-
 
 generate-user-api:
 	mkdir -p pkg/user_v1
@@ -79,7 +74,6 @@ generate-access-api:
 	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	api/access_v1/access.proto
 
-
 vendor-proto:
 	@if [ ! -d vendor.protogen/validate ]; then \
 		mkdir -p vendor.protogen/validate &&\
@@ -113,7 +107,6 @@ gen-refresh-secret:
 
 gen-access-secret:
 	openssl genrsa -out access_secret.key 2048
-
 
 # Для локальной накатки миграций
 # local-migration-status:
@@ -166,7 +159,6 @@ grpc-error-load-test:
   		--cert service.pem \
   		--key service.key \
 		localhost:${GRPC_PORT}
-
 
 format:
 	find . -name '*.go' -exec goimports -w {} +

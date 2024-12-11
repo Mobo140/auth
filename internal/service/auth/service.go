@@ -13,6 +13,8 @@ import (
 	"github.com/Mobo140/auth/internal/service"
 	"github.com/Mobo140/auth/internal/utils"
 	"github.com/Mobo140/platform_common/pkg/db"
+	"github.com/Mobo140/platform_common/pkg/logger"
+	"go.uber.org/zap"
 )
 
 var _ service.AuthService = (*serv)(nil)
@@ -44,6 +46,8 @@ func NewService(
 func (s *serv) Login(ctx context.Context, data *model.LoginData) (*string, error) {
 	var userData *model.UserAuthData
 	var refreshToken string
+
+	logger.Info("Starting transcation...")
 
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
@@ -86,8 +90,12 @@ func (s *serv) Login(ctx context.Context, data *model.LoginData) (*string, error
 	})
 
 	if err != nil {
+		logger.Error("Transaction error: ", zap.Error(err))
+
 		return nil, err
 	}
+
+	logger.Info("Generating token...")
 
 	refreshToken, err = utils.GenerateToken(
 		&model.Info{
@@ -99,7 +107,10 @@ func (s *serv) Login(ctx context.Context, data *model.LoginData) (*string, error
 	)
 
 	if err != nil {
-		return nil, errors.New("failed to generate refresh token")
+		err = fmt.Errorf("failed to generate refresh token: %w", err)
+		logger.Error("Generating refresh token...", zap.Error(err))
+
+		return nil, err
 	}
 
 	return &refreshToken, nil
@@ -108,6 +119,8 @@ func (s *serv) Login(ctx context.Context, data *model.LoginData) (*string, error
 func (s *serv) GetRefreshToken(ctx context.Context, refreshTokenStr string) (*string, error) {
 	var claims *model.UserClaims
 	var refreshToken string
+
+	logger.Info("Starting transcation...")
 
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
@@ -131,6 +144,8 @@ func (s *serv) GetRefreshToken(ctx context.Context, refreshTokenStr string) (*st
 	})
 
 	if err != nil {
+		logger.Error("Transaction error: ", zap.Error(err))
+
 		return nil, err
 	}
 
@@ -144,6 +159,9 @@ func (s *serv) GetRefreshToken(ctx context.Context, refreshTokenStr string) (*st
 	)
 
 	if err != nil {
+		err = fmt.Errorf("failed to generate refersh token: %w", err)
+		logger.Error("Generating refresh token...", zap.Error(err))
+
 		return nil, errors.New("failed to generate refresh token")
 	}
 

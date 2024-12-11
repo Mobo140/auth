@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/Mobo140/auth/internal/config"
 	"github.com/Mobo140/auth/internal/interceptor"
@@ -42,6 +43,7 @@ var (
 	logsMaxBackups  = 3
 	logsMaxAge      = 7
 	authServiceName = "auth_service"
+	reqTimeout      = 5 * time.Second
 )
 
 type App struct {
@@ -169,6 +171,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,
 				interceptor.MetricsInterceptor,
+				interceptor.TimeoutUnaryServerInterceptor(reqTimeout),
 				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 			),
 		),

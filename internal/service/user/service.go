@@ -8,6 +8,8 @@ import (
 	"github.com/Mobo140/auth/internal/repository"
 	"github.com/Mobo140/auth/internal/service"
 	"github.com/Mobo140/platform_common/pkg/db"
+	"github.com/Mobo140/platform_common/pkg/logger"
+	"go.uber.org/zap"
 )
 
 var _ service.UserService = (*serv)(nil)
@@ -36,6 +38,9 @@ func NewService(
 
 func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 	var id int64
+
+	logger.Info("Starting transcation...")
+
 	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var errTx error
 		if id, errTx = s.dbRepository.Create(ctx, user); errTx != nil {
@@ -56,6 +61,8 @@ func (s *serv) Create(ctx context.Context, user *model.User) (int64, error) {
 	})
 
 	if err != nil {
+		logger.Error("Transaction error: ", zap.Error(err))
+
 		return unknownUser, err
 	}
 
