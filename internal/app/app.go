@@ -14,6 +14,8 @@ import (
 
 	"github.com/Mobo140/auth/internal/config"
 	"github.com/Mobo140/auth/internal/interceptor"
+	"github.com/Mobo140/auth/internal/metric"
+	"github.com/Mobo140/auth/internal/ratelimiter"
 	descAccess "github.com/Mobo140/auth/pkg/access_v1"
 	descAuth "github.com/Mobo140/auth/pkg/auth_v1"
 	desc "github.com/Mobo140/auth/pkg/user_v1"
@@ -39,6 +41,7 @@ import (
 
 var (
 	count           = 4
+	countPerSecond  = 10
 	logsMaxSize     = 10
 	logsMaxBackups  = 3
 	logsMaxAge      = 7
@@ -69,6 +72,7 @@ func NewApp(ctx context.Context, configPath string, loggerLevel string) (*App, e
 
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
+		a.initMetric,
 		a.initConfig,
 		a.initLogger,
 		a.initServiceProvider,
@@ -84,6 +88,15 @@ func (a *App) initDeps(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (a *App) initMetric(ctx context.Context) error {
+	err := metric.Init(ctx)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -164,6 +177,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		return err
 	}
 
+	rateLimiter := ratelimiter.NewTokenBucketLimiter(ctx, countPerSecond, time.Second)
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
 		grpc.UnaryInterceptor(
@@ -172,6 +186,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.ValidateInterceptor,
 				interceptor.MetricsInterceptor,
 				interceptor.TimeoutUnaryServerInterceptor(reqTimeout),
+				interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
 				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 			),
 		),
