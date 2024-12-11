@@ -213,7 +213,11 @@ func (s *serviceProvider) JaegerConfig() config.JaegerConfig {
 
 func (s *serviceProvider) RedisClient() cache.Client {
 	if s.redisClient == nil {
-		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
+		cl := redis.NewClient(s.RedisPool(), s.RedisConfig())
+
+		closer.Add(cl.Close)
+
+		s.redisClient = cl
 	}
 
 	return s.redisClient

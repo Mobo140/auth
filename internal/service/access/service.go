@@ -8,6 +8,8 @@ import (
 	"strconv"
 
 	"github.com/Mobo140/auth/internal/config"
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/Mobo140/auth/internal/model"
 	"github.com/Mobo140/auth/internal/repository"
 	"github.com/Mobo140/auth/internal/service"
@@ -45,6 +47,9 @@ func NewService(
 }
 
 func (s *serv) Check(ctx context.Context, accessToken string, endpoint string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Check/Service")
+	defer span.Finish()
+
 	claims, err := utils.VerifyToken(accessToken, s.cfg.AccessKey())
 	if err != nil {
 		return errors.New("access token is invalid")

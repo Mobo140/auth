@@ -8,6 +8,7 @@ import (
 	"github.com/Mobo140/auth/internal/service"
 	desc "github.com/Mobo140/auth/pkg/access_v1"
 	"github.com/Mobo140/platform_common/pkg/logger"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 
 	"google.golang.org/grpc/metadata"
@@ -16,6 +17,7 @@ import (
 
 const (
 	authPrefix = "Bearer "
+	traceIDKey = "x-trace-id"
 )
 
 type Implementation struct {
@@ -30,6 +32,9 @@ func NewImplementation(accessService service.AccessService) *Implementation {
 }
 
 func (i *Implementation) Check(ctx context.Context, req *desc.CheckRequest) (*emptypb.Empty, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Check/Implementation")
+	defer span.Finish()
+
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		err := errors.New("metadata is not provided")
