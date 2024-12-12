@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Mobo140/auth/internal/breaker"
 	"github.com/Mobo140/auth/internal/config"
 	"github.com/Mobo140/auth/internal/interceptor"
 	"github.com/Mobo140/auth/internal/metric"
@@ -24,6 +25,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sony/gobreaker"
 
 	_ "github.com/Mobo140/auth/statik" // init statik
 	"github.com/Mobo140/platform_common/pkg/closer"
@@ -55,6 +57,8 @@ type App struct {
 	httpServer       *http.Server
 	swaggerServer    *http.Server
 	prometheusServer *http.Server
+	circuitBreaker   *gobreaker.CircuitBreaker
+	rateLimiter      *ratelimiter.TokenBucketLimiter
 	configPath       string
 	loggerLevel      string
 }
@@ -77,6 +81,8 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initLogger,
 		a.initServiceProvider,
 		a.initTracer,
+		a.initRateLimiter,
+		a.initCircuitBreaker,
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
@@ -130,6 +136,20 @@ func (a *App) initTracer(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initRateLimiter(ctx context.Context) error {
+	rateLimiter := ratelimiter.NewTokenBucketLimiter(ctx, countPerSecond, time.Second)
+
+	a.rateLimiter = rateLimiter
+
+	return nil
+}
+
+func (a *App) initCircuitBreaker(_ context.Context) error {
+	a.circuitBreaker = breaker.Init()
+
+	return nil
+}
+
 func getCore(level zap.AtomicLevel) zapcore.Core {
 	stdout := zapcore.AddSync(os.Stdout)
 
@@ -177,7 +197,6 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		return err
 	}
 
-	rateLimiter := ratelimiter.NewTokenBucketLimiter(ctx, countPerSecond, time.Second)
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
 		grpc.UnaryInterceptor(
@@ -186,7 +205,8 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.ValidateInterceptor,
 				interceptor.MetricsInterceptor,
 				interceptor.TimeoutUnaryServerInterceptor(reqTimeout),
-				interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
+				interceptor.NewRateLimiterInterceptor(a.rateLimiter).Unary,
+				interceptor.NewCircuitBreakerInterceptor(a.circuitBreaker).Unary,
 				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 			),
 		),

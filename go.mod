@@ -23,6 +23,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.11.1
+	github.com/sony/gobreaker v1.0.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.27.0
