@@ -55,22 +55,21 @@ func (s *serv) Login(ctx context.Context, data *model.LoginData) (*string, error
 
 		// check data in cache
 		userData, errCache = s.userCacheRepository.GetHashAndRoleByUsername(ctx, data.Username)
-		if errCache == nil && userData != nil {
-			return nil
+		if errCache != nil || userData == nil {
+			// no data in cache. Check in db
+			userData, errTx = s.userDBRepository.GetHashAndRoleByUsername(ctx, data.Username)
+			if errTx != nil {
+				return errTx
+			}
+
+			// write data to cache
+			errCache = s.userCacheRepository.SetHashAndRole(ctx, data.Username, userData)
+			if errCache != nil {
+				log.Printf("failed to set user data in cache: %v", errCache)
+			}
 		}
 
-		// no data in cache. Check in db
-		userData, errTx = s.userDBRepository.GetHashAndRoleByUsername(ctx, data.Username)
-		if errTx != nil {
-			return errTx
-		}
-
-		// write data to cache
-		errCache = s.userCacheRepository.SetHashAndRole(ctx, data.Username, userData)
-		if errCache != nil {
-			log.Printf("failed to set user data in cache: %v", errCache)
-		}
-
+		// Verify password for both cache and db cases
 		valid := utils.VerifyPassword(userData.HashedPassword, data.Password)
 		if !valid {
 			return fmt.Errorf("password is invalid")
