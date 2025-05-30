@@ -1,127 +1,161 @@
 # Auth Service
 
-Auth Service - это микросервис аутентификации и авторизации, разработанный на Go с использованием gRPC. Сервис предоставляет функционал управления пользователями, аутентификации и контроля доступа.
+**Auth Service** is an authentication and authorization microservice written in Go using gRPC. It provides user management, authentication, and access control functionality.
 
-## Функциональность
+---
 
-### Аутентификация
+## 🚀 Quick Start
 
-- Логин пользователей с использованием username/password
-- Система двух токенов (refresh/access)
-- Проверка доступа к защищенным эндпоинтам
-
-### Управление пользователями
-
-- Создание пользователей с подтверждением пароля
-- Получение информации о пользователе по ID
-- Получение списка пользователей с пагинацией
-- Обновление информации пользователя
-- Удаление пользователей
-
-## Технологический стек
+### Requirements
 
 - Go 1.21+
-- gRPC/Protobuf
-- PostgreSQL (хранение пользователей)
-- Redis (кэширование)
-- Jaeger (трейсинг)
-- gRPC Gateway (REST API)
-- Swagger (документация)
-- Grafana (визуализация данных)
-- Prometheus (мониторинг)
-- Zap (логирование)
+- Docker & Docker Compose (optional)
+- CLI tools: protoc, grpc-gateway, etc. (Makefile automates installation)
 
-## API
+### 1. Clone the project
 
-### User Service (user_v1)
+```bash
+git clone https://github.com/your-org/auth-service.git
+cd auth-service
+````
 
-Управление пользователями:
+### 2. Run setup
 
-- Create - создание нового пользователя
-- Get - получение информации о пользователе по ID
-- GetUsers - получение списка пользователей с пагинацией
-- Update - обновление информации пользователя
-- Delete - удаление пользователя
+```bash
+make setup
+```
 
-### Auth Service (auth_v1)
+This will:
 
-Аутентификация:
+- Install all necessary tools (if missing)
+- Generate gRPC, gateway, validators, swagger, etc.
+- Start services (via Docker Compose if configured)
 
-- Login - аутентификация пользователя и получение refresh token
-- GetRefreshToken - обновление refresh token
-- GetAccessToken - получение access token по refresh token
+---
 
-### Access Service (access_v1)
+## 📦 Features
 
-Авторизация:
+- Username/password authentication
+- JWT tokens with access and refresh tokens
+- User management (CRUD)
+- Role-based access control (Admin/User/Guest)
+- gRPC Gateway for REST API
+- Swagger documentation
 
-- Check - проверка доступа к защищенным эндпоинтам
+---
 
-## Особенности реализации
+## 🧰 Makefile Commands
 
-### Безопасность
+| Command                  | Description                                                |
+| ------------------------ | ---------------------------------------------------------- |
+| `make setup`             | Install dependencies, generate code, start services        |
+| `make install-deps`      | Install CLI tools (protoc, grpc-gateway, validate, linter) |
+| `make generate`          | Generate gRPC, gateway, swagger, validators                |
+| `make generate-auth-api` | Generate code from `auth.proto`                            |
+| `make lint`              | Run static code analysis (golangci-lint)                   |
+| `make test`              | Run unit tests                                             |
 
-- Хеширование паролей перед сохранением
-- Система JWT токенов для аутентификации
-- Система ролей для авторизации
-- Механизм refresh/access токенов
+---
 
-### Производительность
+## 🔧 Tech Stack
 
-- Кэширование данных пользователей в Redis
-- Использование транзакций для обеспечения целостности данных
-- Оптимизированные запросы к базе данных
+- Go 1.21+
+- gRPC + Protobuf
+- PostgreSQL (user storage)
+- Redis (caching)
+- Jaeger (tracing)
+- gRPC Gateway + Swagger (REST API + docs)
+- Zap (logging)
+- Prometheus + Grafana (monitoring)
 
-### Мониторинг и логирование
+---
 
-- Трейсинг запросов через Jaeger
-- Структурированное логирование с использованием Zap
-- Метрики для мониторинга производительности
+## 🔐 Security
 
-## Процесс аутентификации
+- Password hashing
+- JWT tokens (access token: 15 minutes, refresh token: 24 hours)
+- Role-based access control (Admin, User, Guest)
+- Refresh token mechanism
 
-### Получение токенов
+---
 
-1. Пользователь отправляет логин/пароль через метод Login
-2. Сервис проверяет учетные данные и возвращает refresh token
-3. Клиент использует refresh token для получения access token
-4. Access token используется для доступа к защищенным ресурсам
+## 🛠 API
 
-### Жизненный цикл токенов
+### User Service (`user_v1`)
 
-- Access token: короткоживущий (15 минут), используется для доступа к API
-- Refresh token: долгоживущий (24 часа), используется для обновления access token
-- При истечении refresh token требуется повторная аутентификация
+- Create — create a new user
+- Get — get user info by ID
+- GetUsers — list users with pagination
+- Update — update user info
+- Delete — delete user
 
-## Взаимодействие с другими сервисами
+### Auth Service (`auth_v1`)
 
-### Схема взаимодействия
+- Login — authenticate and get refresh token
+- GetRefreshToken — refresh the refresh token
+- GetAccessToken — get access token using refresh token
 
-1. Клиент -> Auth Service: аутентификация и получение токенов
-2. Клиент -> Другие сервисы: запрос с access token
-3. Другие сервисы -> Auth Service: проверка валидности токена
-4. Auth Service -> Другие сервисы: подтверждение/отказ в доступе
+### Access Service (`access_v1`)
 
-### Процесс проверки доступа
+- Check — check access rights to protected endpoints
 
-1. Сервис получает запрос с access token
-2. Вызывает метод Check в Auth Service
-3. Auth Service проверяет:
-   - Валидность токена
-   - Права доступа (роли)
-   - Срок действия токена
-4. Возвращает результат проверки
+---
 
-## Роли и права доступа
+## 🔄 Authentication Flow
 
-### Доступные роли
+1. Client calls `Login` with username and password
+2. Receives a refresh token
+3. Uses refresh token to get access token
+4. Access token is used to access protected resources
+5. Refresh token expiration requires re-authentication
 
-- Admin (1): полный доступ ко всем эндпоинтам
-- User (2): ограниченный доступ к пользовательским функциям
-- Guest (3): доступ только к публичным эндпоинтам
+---
 
-### Матрица доступа
+## 🔄 Interaction with Other Services
 
-- Управление пользователями: только Admin
-- Просмотр информации: Admin и User
-- Публичные эндпоинты: все роли
+- Client authenticates with Auth Service
+- Other services receive access token and validate it through Auth Service (`Check` method)
+- Auth Service validates token and user permissions
+
+---
+
+## 👥 Roles and Permissions
+
+| Role  | Access Level                             |
+| ----- | ---------------------------------------- |
+| Admin | Full access to all endpoints             |
+| User  | Limited access to user-related functions |
+| Guest | Access to public endpoints only          |
+
+---
+
+## 📁 Project Layout
+
+```
+├── api/                      # Protobuf definitions
+├── cmd/                      # Entrypoints (main.go)
+├── internal/                 # Private application code
+│   ├── app/                  # Application wiring (DI, lifecycle)
+│   ├── client/               # External clients (e.g., Redis)
+│   ├── config/               # Config loading
+│   ├── converter/            # Data transformers between transport and service layers
+│   ├── interceptor/          # gRPC interceptors (auth, logging, etc.)
+│   ├── model/                # Domain models and constants
+│   ├── metric/               # Initialization of metrics
+│   ├── ratelimiter/          # Rate limiting logic
+│   ├── repository/           # Storage access (Postgres, etc.)
+│   ├── service/              # Business logic
+│   └── transport/
+│       └── handlers/         # gRPC handlers
+├── migrations/               # Database schema (Goose)
+├── pkg/                      # Generated code and shared helpers
+├── vendor.protogen/          # External proto dependencies
+├── Makefile                  # Dev utility commands
+├── env/                      # Environment variables
+
+
+---
+
+## 📄 License
+
+MIT

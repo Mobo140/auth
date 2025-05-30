@@ -23,11 +23,11 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-    
+
   pg-local:
     image: postgres:16-alpine3.20
     env_file:
-      - "local.env"
+      - "env/local.env"
     ports:
       - "50001:5432"
     volumes:
@@ -45,7 +45,7 @@ services:
   migrator-local:
     build:
       context: .
-      dockerfile: migration_local.dockerfile
+      dockerfile: migrations/local/migration_local.dockerfile
     restart: on-failure
     environment:
       DB_HOST: pg-local
@@ -61,7 +61,7 @@ services:
   # migrator-prod:
   #   build:
   #     context: .
-  #     dockerfile: migration_prod.dockerfile
+  #     dockerfile: migrations/prod/migration_prod.dockerfile
   #   restart: on-failure
   #   environment:
   #     DB_HOST: pg-prod

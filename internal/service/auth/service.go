@@ -11,7 +11,7 @@ import (
 	"github.com/Mobo140/auth/internal/model"
 	"github.com/Mobo140/auth/internal/repository"
 	"github.com/Mobo140/auth/internal/service"
-	"github.com/Mobo140/auth/internal/utils"
+	"github.com/Mobo140/auth/pkg/utils"
 	"github.com/Mobo140/platform_common/pkg/db"
 	"github.com/Mobo140/platform_common/pkg/logger"
 	"go.uber.org/zap"
